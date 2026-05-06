@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<UseWPF>true</UseWPF>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="Resources\MenuConfig.txt" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Resources\MenuConfig.txt" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
+	  <PackageReference Include="WPF-UI" Version="4.2.1">
+	    <GeneratePathProperty>True</GeneratePathProperty>
+	  </PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="AcCoreMgd">
+			<HintPath>C:\Program Files\Autodesk\AutoCAD 2026\AcCoreMgd.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="AcDbMgd">
+			<HintPath>C:\Program Files\Autodesk\AutoCAD 2026\AcDbMgd.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="AcMgd">
+			<HintPath>C:\Program Files\Autodesk\AutoCAD 2026\AcMgd.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="AdWindows">
+			<HintPath>C:\Program Files\Autodesk\AutoCAD 2026\AdWindows.dll</HintPath>
+			<Private>False</Private>
+		</Reference>
+	</ItemGroup>
+
+</Project>

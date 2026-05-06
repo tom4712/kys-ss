@@ -1,0 +1,13 @@
+﻿@Excel 관련
+#좌표 입력\FileExcelSolid\ExcelInputUI\#217346
+#좌표 수집\TableSolid\ExcelCollectUI\#217346
+@txt 관련
+#좌표 입력\FileLinesSolid\TxtInputUI\#2B579A
+#좌표 수집\FileMagnifyingGlassSolid\TxtCollectUI\#2B579A
+@좌표 관련
+#DWG 좌표변환\LocationCrosshairsSolid\DwgCoordUI\#D83B01
+#객체 좌표변환\DrawPolygonSolid\ObjCoordUI\#D83B01
+@객체선택
+#특정문자 선택\ArrowPointerSolid\SelectCharUI\#8764B8
+#중복텍스트 선택\CopySolid\DupTextUI\#8764B8
+#특정문자 제외 선택\FilterCircleXmarkSolid\ExcludeCharUI\#E81123
