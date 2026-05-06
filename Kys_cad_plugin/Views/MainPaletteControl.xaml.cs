@@ -47,10 +47,22 @@ namespace Kys_cad_plugin.Views
             else
             {
                 // 키가 있으면 (만료되었더라도) 정보를 서버에서 가져와 상세창 표시
-                // 상세창 하단에 '변경'과 '삭제' 링크가 있으므로 사용자가 조치 가능
                 var info = await Kys_cad_plugin.Core.LicenseManager.GetFullLicenseInfoAsync(savedKey);
+
                 if (info != null)
                 {
+                    // ⭐️ [수정된 부분] 상세창을 띄우기 전에, 현재 기기 대수가 한도를 초과했는지 먼저 검사합니다.
+                    if (info.CurrentMachines > info.MaxMachines)
+                    {
+                        // 초과 상태라면 경고창을 띄워 사용자에게 상황을 알립니다.
+                        System.Windows.MessageBox.Show(
+                            $"[인증 초과 알림]\n허용된 기기 대수({info.MaxMachines}대)를 초과하여 사용 중입니다.\n상세창 하단의 '기기에서 삭제'를 눌러 대수를 맞춰주세요.",
+                            "기기 제한 초과",
+                            System.Windows.MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+                    }
+
+                    // 상세창 표시 (초과 상태더라도 상세창을 띄워야 하단 링크로 '삭제'를 할 수 있음)
                     await ShowLicenseDetailsDialogAsync(info);
                 }
                 else
@@ -124,13 +136,30 @@ namespace Kys_cad_plugin.Views
             var dialog = new Wpf.Ui.Controls.ContentDialog(DialogHost) { Title = "라이선스 상세 정보", Content = contentPanel, CloseButtonText = "닫기" };
 
             changeLink.Click += async (s, e) => { dialog.Hide(); await ShowInputLicenseDialogAsync(); };
-            deleteLink.Click += async (s, e) => {
-                if (System.Windows.MessageBox.Show("서버에서도 기기 등록이 해제됩니다. 계속하시겠습니까?", "기기 등록 해제", System.Windows.MessageBoxButton.YesNo, MessageBoxImage.Warning) == System.Windows.MessageBoxResult.Yes)
+            deleteLink.Click += async (s, e) =>
+            {
+                // 1. WPF 기본 MessageBox로 사용자 확인
+                if (System.Windows.MessageBox.Show("서버에서 기기를 해제합니다. 계속하시겠습니까?", "기기 삭제", System.Windows.MessageBoxButton.YesNo, MessageBoxImage.Warning) == System.Windows.MessageBoxResult.Yes)
                 {
+                    // 2. WPF-UI 다이얼로그 닫기 (이 부분을 안 닫아주면 UI가 멈춘 것처럼 보일 수 있음)
                     dialog.Hide();
-                    await Kys_cad_plugin.Core.LicenseManager.DeactivateMachineAsync(info.Key, info.MachineId);
-                    Kys_cad_plugin.Core.RegistryHelper.DeleteLicenseKey();
-                    await CheckLicenseState();
+
+                    // 3. 서버에 삭제 요청 (위에서 가져온 info.MachineId 사용)
+                    var result = await Core.LicenseManager.DeactivateMachineAsync(info.Key, info.MachineId);
+
+                    if (result.Success)
+                    {
+                        // 4. 레지스트리 키 삭제 및 UI 잠금 상태로 갱신
+                        Core.RegistryHelper.DeleteLicenseKey();
+                        System.Windows.MessageBox.Show("기기가 성공적으로 해제되었습니다.", "성공", System.Windows.MessageBoxButton.OK, MessageBoxImage.Information);
+
+                        // 기존에 만들어두신 UI 갱신 함수 호출 (다시 자물쇠 화면으로 돌아감)
+                        await CheckLicenseState();
+                    }
+                    else
+                    {
+                        System.Windows.MessageBox.Show($"해제 실패: {result.Message}", "오류", System.Windows.MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
             };
 
@@ -429,7 +458,7 @@ namespace Kys_cad_plugin.Views
             // 텍스트 블록 생성
             var textBlock = new System.Windows.Controls.TextBlock
             {
-                Text = "제품을 사용하려면 유효한 라이선스 키를 입력하십시오.",
+                Text = "라이선스 키를 입력하십시오.",
                 FontSize = 12
             };
             // [핵심 해결 방법] XAML의 DynamicResource와 완벽하게 동일한 코드입니다.
