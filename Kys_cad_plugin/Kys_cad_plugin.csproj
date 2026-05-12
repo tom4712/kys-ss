@@ -18,6 +18,9 @@
 
 	<ItemGroup>
 	  <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
+	  <PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022">
+	  	<EmbedInteropTypes>true</EmbedInteropTypes>
+	  </PackageReference>
 	  <PackageReference Include="WPF-UI" Version="4.2.1">
 	    <GeneratePathProperty>True</GeneratePathProperty>
 	  </PackageReference>

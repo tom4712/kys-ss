@@ -329,56 +329,79 @@ namespace Kys_cad_plugin.Views
             {
                 try
                 {
-                    // [핵심 2] 다른 메뉴를 누르면 기존에 열려있던 창을 무조건 강제로 닫습니다.
-                    if (_currentActiveWindow != null)
-                    {
-                        if (_currentActiveWindow.IsLoaded)
-                        {
-                            _currentActiveWindow.Close();
-                        }
-                        _currentActiveWindow = null;
-                    }
+                    item.IsSelected = false; // 선택 즉시 해제
 
-                    string fullClassName = $"Kys_cad_plugin.Views.{uiName}";
-                    Type targetType = Assembly.GetExecutingAssembly().GetType(fullClassName);
-                    Window windowToShow = null;
+                    // 1. 메뉴에서 클릭한 항목의 텍스트(이름)를 가져와 창의 Title로 사용합니다.
+                    string windowTitle = ExtractMenuTitle(item.Header);
 
-                    if (targetType != null && targetType.IsSubclassOf(typeof(Window)))
-                    {
-                        windowToShow = (Window)Activator.CreateInstance(targetType);
-                    }
-                    else
-                    {
-                        windowToShow = new Kys_cad_plugin.Views.TestWindow();
-                        windowToShow.Title = $"테스트 창 - {uiName} 기능은 아직 구현되지 않았습니다.";
-                    }
-
-                    if (windowToShow != null)
-                    {
-                        // [핵심 3] 항상 위 설정
-                        windowToShow.Topmost = true;
-
-                        // 창이 사용자에 의해 닫힐 때 현재 창 변수를 초기화합니다.
-                        windowToShow.Closed += (s, ev) =>
-                        {
-                            if (_currentActiveWindow == windowToShow)
-                            {
-                                _currentActiveWindow = null;
-                            }
-                        };
-
-                        // [핵심 4] 새로 만든 창을 "현재 창"으로 등록하고 띄웁니다.
-                        _currentActiveWindow = windowToShow;
-                        windowToShow.Show();
-                    }
+                    // 2. 동적 창 생성 함수 호출 (이름과 UI 클래스명 전달)
+                    OpenPluginWindow(windowTitle, uiName);
                 }
                 catch (Exception ex)
                 {
-                    System.Windows.MessageBox.Show($"UI '{uiName}' 실행 중 오류가 발생했습니다.\n{ex.Message}", "오류", System.Windows.MessageBoxButton.OK, MessageBoxImage.Error);
+                    System.Windows.MessageBox.Show($"'{uiName}' 실행 중 오류가 발생했습니다.\n{ex.Message}", "오류", System.Windows.MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-
-                item.IsSelected = false; // 선택 해제
             }
+        }
+
+        private void OpenPluginWindow(string title, string uiClassName)
+        {
+            // 1. 기존에 열려있던 창 강제 종료 (싱글톤 유지)
+            if (_currentActiveWindow != null)
+            {
+                if (_currentActiveWindow.IsLoaded) _currentActiveWindow.Close();
+                _currentActiveWindow = null;
+            }
+
+            // 2. 텍스트 파일에 적힌 이름(uiClassName)으로 실제 C# 클래스(Type)를 찾습니다.
+            string fullClassName = $"Kys_cad_plugin.Views.{uiClassName}";
+            Type targetType = Assembly.GetExecutingAssembly().GetType(fullClassName);
+
+            Window windowToShow = null;
+
+            // 3. 찾은 클래스가 Window(FluentWindow 포함) 형태라면 그대로 생성합니다.
+            if (targetType != null && targetType.IsSubclassOf(typeof(Window)))
+            {
+                windowToShow = (Window)Activator.CreateInstance(targetType);
+                // Title은 XAML에 설정되어 있지만, 트리뷰에서 가져온 이름으로 덮어쓸 수도 있습니다.
+                // windowToShow.Title = title; 
+            }
+            else
+            {
+                // 아직 개발 안 된 메뉴를 클릭했을 때 튕기지 않도록 방어 코드
+                windowToShow = new Kys_cad_plugin.Views.TestWindow();
+                windowToShow.Title = $"[미구현] {title}";
+            }
+
+            // 4. 창 닫힘 이벤트 처리
+            windowToShow.Closed += (s, ev) =>
+            {
+                if (_currentActiveWindow == windowToShow) _currentActiveWindow = null;
+            };
+
+            // 5. 화면에 표시! (껍데기에 넣는 과정 없이 바로 Show)
+            _currentActiveWindow = windowToShow;
+
+            // ⭐️ 핵심: 여기서 생성되는 모든 플러그인 창을 무조건 최상단에 고정합니다!
+            windowToShow.Topmost = true;
+
+            windowToShow.Show();
+        }
+
+        // ==============================================================================
+        // ⭐️ 보조 함수: TreeViewItem의 Header(StackPanel)에서 한글 텍스트만 쏙 빼오는 함수
+        // ==============================================================================
+        private string ExtractMenuTitle(object header)
+        {
+            if (header is StackPanel sp)
+            {
+                foreach (var child in sp.Children)
+                {
+                    if (child is Wpf.Ui.Controls.TextBlock tb)
+                        return tb.Text; // 예: "좌표 입력", "특정문자 선택" 등
+                }
+            }
+            return "KYS CAD Plugin";
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)

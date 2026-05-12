@@ -1,6 +1,7 @@
 ﻿@Excel 관련
 #좌표 입력\FileExcelSolid\ExcelInputUI\#217346
 #좌표 수집\TableSolid\ExcelCollectUI\#217346
+#17사 입력\FileExcel17\Excel17InputUI\#217346
 @txt 관련
 #좌표 입력\FileLinesSolid\TxtInputUI\#2B579A
 #좌표 수집\FileMagnifyingGlassSolid\TxtCollectUI\#2B579A
