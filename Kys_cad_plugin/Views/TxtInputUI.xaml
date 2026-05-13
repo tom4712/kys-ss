@@ -1,0 +1,267 @@
+﻿<ui:FluentWindow x:Class="Kys_cad_plugin.Views.TxtInputUI"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                 Title="TXT 좌표 도면 자동 생성기" 
+                 Width="950" Height="780"
+                 WindowStartupLocation="CenterScreen"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica"
+                 Background="{DynamicResource ApplicationBackgroundBrush}"
+                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                 FontFamily="Segoe UI, Malgun Gothic"
+                 SnapsToDevicePixels="True">
+
+    <ui:FluentWindow.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ControlsDictionary />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style TargetType="GridViewColumnHeader">
+                <Setter Property="Height" Value="35"/>
+                <Setter Property="Padding" Value="10,0"/>
+                <Setter Property="Background" Value="{DynamicResource ControlFillColorDefaultBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}"/>
+                <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource ControlElevationBorderBrush}"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="GridViewColumnHeader">
+                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="ListViewItem">
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListViewItem">
+                            <Border Background="{TemplateBinding Background}" CornerRadius="4">
+                                <GridViewRowPresenter VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource ControlFillColorSecondaryBrush}"/>
+                    </Trigger>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource SubtleFillColorSecondaryBrush}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </ResourceDictionary>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="TXT 좌표 도면 자동 생성기" Padding="15,5"/>
+
+        <Grid Grid.Row="1" Margin="20,10,20,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.2*"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <ui:Card Grid.Row="0" Margin="0" Padding="15,12">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <iconPacks:PackIconFontAwesome Grid.Column="0" Kind="FileLinesRegular" Width="24" Height="24" Foreground="#2B579A" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="TXT/CSV Explorer" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="텍스트 파일을 불러와 좌표를 확인하세요." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,2,0,0"/>
+                        </StackPanel>
+                        <ui:Button Grid.Column="2" x:Name="BtnLoadTxt" Appearance="Info" Padding="15,8" Icon="{ui:SymbolIcon Symbol=DocumentSearch24}" Click="BtnLoadTxt_Click">
+                            <TextBlock Text="파일 불러오기" FontWeight="SemiBold"/>
+                        </ui:Button>
+                    </Grid>
+                </ui:Card>
+
+                <ui:Card Grid.Row="1" Padding="0" Margin="0,5,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Top">
+                    <ListView x:Name="ExcelListView" BorderThickness="0" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="ID" Width="80">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Id}" Margin="5,0,20,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}" FontWeight="SemiBold"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="X (Easting)" Width="120">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding X}" Margin="5,0,20,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Y (Northing)" Width="120">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Y}" Margin="5,0,20,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                                <GridViewColumn Header="Z (Level)" Width="100">
+                                    <GridViewColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Z}" Margin="5,0,20,0" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                        </DataTemplate>
+                                    </GridViewColumn.CellTemplate>
+                                </GridViewColumn>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </ui:Card>
+            </Grid>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="12"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <ui:Card Grid.Row="0" Padding="15">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <ui:SymbolIcon Symbol="Layer24" Margin="0,0,8,0" Filled="True" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                            <TextBlock Text="작업 대상 도면" FontWeight="Bold" FontSize="13"/>
+                        </StackPanel>
+                        <ComboBox x:Name="CboDrawingSelect" HorizontalAlignment="Stretch" DisplayMemberPath="DisplayName"/>
+                    </StackPanel>
+                </ui:Card>
+
+                <ui:Card Grid.Row="2" Padding="15" VerticalAlignment="Stretch">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="15"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="15"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="15"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="15"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="15"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="15"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0">
+                            <TextBlock Text="도면층(Layer) 이름" FontWeight="Bold" FontSize="12" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBox x:Name="TxtLayerName" PlaceholderText="입력할 레이어 이름" Icon="{ui:SymbolIcon Symbol=Tag24}" ClearButtonEnabled="True"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2">
+                            <TextBlock Text="도면 요소 생성 방식" FontWeight="Bold" FontSize="12" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <ComboBox x:Name="CboInputType" HorizontalAlignment="Stretch" SelectedIndex="0" Height="38">
+                                <ComboBoxItem>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="Shapes24" Margin="0,0,8,0" FontSize="16"/>
+                                        <TextBlock Text="텍스트 + 주점(Point)"/>
+                                    </StackPanel>
+                                </ComboBoxItem>
+                                <ComboBoxItem>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="TextT24" Margin="0,0,8,0" FontSize="16"/>
+                                        <TextBlock Text="텍스트만 생성"/>
+                                    </StackPanel>
+                                </ComboBoxItem>
+                                <ComboBoxItem>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon Symbol="PointScan24" Margin="0,0,8,0" FontSize="16"/>
+                                        <TextBlock Text="주점만 생성"/>
+                                    </StackPanel>
+                                </ComboBoxItem>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="4">
+                            <TextBlock Text="요소 크기 설정" FontWeight="Bold" FontSize="12" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="문자 크기" FontSize="11" Margin="0,0,0,4" Opacity="0.8"/>
+                                    <ui:TextBox x:Name="TxtTextHeight" Text="100.0" TextAlignment="Right" Icon="{ui:SymbolIcon Symbol=TextFontSize24}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="주점 크기" FontSize="11" Margin="0,0,0,4" Opacity="0.8"/>
+                                    <ui:TextBox x:Name="TxtPointSize" Text="50.0" TextAlignment="Right" Icon="{ui:SymbolIcon Symbol=Target24}"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="6">
+                            <TextBlock Text="텍스트 회전각 (Degree)" FontWeight="Bold" FontSize="12" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <ui:TextBox x:Name="TxtRotation" Text="0.0" TextAlignment="Right" Icon="{ui:SymbolIcon Symbol=ArrowClockwise24}"/>
+                        </StackPanel>
+
+                        <Border Grid.Row="8" Background="{DynamicResource SubtleFillColorSecondaryBrush}" CornerRadius="6" Padding="12,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <ui:SymbolIcon Symbol="Info24" Margin="0,0,8,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <TextBlock Text="입력 대기중인 데이터" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" x:Name="TxtDataCount" Text="0 개" FontSize="14" FontWeight="Bold" Foreground="#E74C3C"/>
+                            </Grid>
+                        </Border>
+
+                        <Grid Grid.Row="10">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="실행 로그" FontWeight="Bold" FontSize="12" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <ListBox Grid.Row="1" x:Name="LogListBox" Background="{DynamicResource ControlFillColorDefaultBrush}" BorderBrush="{DynamicResource ControlElevationBorderBrush}" BorderThickness="1" ScrollViewer.VerticalScrollBarVisibility="Auto" Padding="5">
+                                <TextBlock Text="▶ 프로그램을 시작합니다." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="2"/>
+                            </ListBox>
+                        </Grid>
+
+                        <ui:Button Grid.Row="12" x:Name="BtnSubmit" Appearance="Info" Height="55" HorizontalAlignment="Stretch" FontWeight="Bold" Click="BtnSubmit_Click" FontSize="16">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconFontAwesome Kind="FileImportSolid" Width="18" Height="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="데이터 입력 시작" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ui:Button>
+                    </Grid>
+                </ui:Card>
+            </Grid>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

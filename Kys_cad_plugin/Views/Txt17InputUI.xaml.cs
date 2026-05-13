@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Runtime.InteropServices;
+using System.IO;
+using System.Text;
 using System.Windows;
+using Microsoft.Win32;
 using Wpf.Ui.Controls;
 
 // 오토캐드 API 참조
@@ -13,29 +15,15 @@ using CadApp = Autodesk.AutoCAD.ApplicationServices.Application;
 
 namespace Kys_cad_plugin.Views
 {
-    public partial class Excel17InputUI : FluentWindow
+    public partial class Txt17InputUI : FluentWindow
     {
-        [DllImport("ole32.dll")]
-        private static extern int CLSIDFromProgID([MarshalAs(UnmanagedType.LPWStr)] string lpszProgID, out Guid pclsid);
+        private ObservableCollection<ExcelPointData> _pointDataList = new ObservableCollection<ExcelPointData>();
 
-        [DllImport("oleaut32.dll", PreserveSig = false)]
-        private static extern void GetActiveObject(ref Guid rclsid, IntPtr reserved, [MarshalAs(UnmanagedType.Interface)] out object ppunk);
-
-        private static object GetActiveObject(string progId)
-        {
-            Guid clsid;
-            CLSIDFromProgID(progId, out clsid);
-            GetActiveObject(ref clsid, IntPtr.Zero, out object obj);
-            return obj;
-        }
-
-        private ObservableCollection<ExcelPointData> _excelDataList = new ObservableCollection<ExcelPointData>();
-
-        public Excel17InputUI()
+        public Txt17InputUI()
         {
             InitializeComponent();
             Wpf.Ui.Appearance.ApplicationThemeManager.Apply(this);
-            ExcelListView.ItemsSource = _excelDataList;
+            DataListView.ItemsSource = _pointDataList;
             RefreshDrawingList();
         }
 
@@ -52,77 +40,79 @@ namespace Kys_cad_plugin.Views
             CboDrawingSelect.SelectedIndex = 0;
         }
 
-        private async void BtnLoadExcel_Click(object sender, RoutedEventArgs e)
+        // TXT/CSV 파일 로드 로직 (FileShare.ReadWrite 적용)
+        private async void BtnLoadTxt_Click(object sender, RoutedEventArgs e)
         {
-            dynamic excelApp = null;
-            dynamic selectedRange = null;
-            try
+            OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                try { excelApp = GetActiveObject("Excel.Application"); }
-                catch { await ShowModernDialog("연결 실패", "실행 중인 엑셀을 찾을 수 없습니다. 엑셀을 먼저 열어주세요."); return; }
+                Filter = "좌표 데이터 파일 (*.txt;*.csv)|*.txt;*.csv|모든 파일 (*.*)|*.*",
+                Title = "좌표 데이터 파일 선택"
+            };
 
-                this.WindowState = WindowState.Minimized;
-                excelApp.Visible = true;
-
-                selectedRange = excelApp.InputBox("캐드에 입력할 ID, X, Y, Z 범위를 드래그하여 선택하세요.", "17사 좌표 데이터 범위 지정", Type: 8);
-
-                this.WindowState = WindowState.Normal;
-                this.Activate();
-
-                if (selectedRange is bool && (bool)selectedRange == false) return;
-                if (selectedRange == null) return;
-
-                object[,] values = selectedRange.Value2 as object[,];
-                if (values == null)
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
                 {
-                    await ShowModernDialog("데이터 오류", "선택된 범위에서 데이터를 읽을 수 없습니다.");
-                    return;
-                }
+                    _pointDataList.Clear();
+                    int successCount = 0;
 
-                _excelDataList.Clear();
-                int successCount = 0;
-
-                for (int i = 1; i <= values.GetLength(0); i++)
-                {
-                    if (values[i, 1] == null && values[i, 2] == null) continue;
-
-                    try
+                    using (FileStream fs = new FileStream(openFileDialog.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (StreamReader sr = new StreamReader(fs, Encoding.Default))
                     {
-                        var data = new ExcelPointData
+                        string line;
+                        while ((line = sr.ReadLine()) != null)
                         {
-                            Id = values[i, 1]?.ToString() ?? "",
-                            X = double.TryParse(values[i, 2]?.ToString(), out double x) ? x : 0,
-                            Y = double.TryParse(values[i, 3]?.ToString(), out double y) ? y : 0,
-                            Z = double.TryParse(values[i, 4]?.ToString(), out double z) ? z : 0
-                        };
+                            if (string.IsNullOrWhiteSpace(line)) continue;
 
-                        if (i == 1 && !double.TryParse(data.X.ToString(), out _) && data.X == 0) continue;
+                            string[] parts = line.Split(new char[] { ',', '\t', ' ' }, StringSplitOptions.RemoveEmptyEntries);
 
-                        _excelDataList.Add(data);
-                        successCount++;
+                            if (parts.Length >= 4)
+                            {
+                                try
+                                {
+                                    var data = new ExcelPointData
+                                    {
+                                        Id = parts[0],
+                                        X = double.Parse(parts[1]),
+                                        Y = double.Parse(parts[2]),
+                                        Z = double.Parse(parts[3])
+                                    };
+
+                                    if (successCount == 0 && !double.TryParse(parts[1], out _) && data.X == 0) continue;
+
+                                    _pointDataList.Add(data);
+                                    successCount++;
+                                }
+                                catch { }
+                            }
+                        }
                     }
-                    catch { }
-                }
 
-                await ShowModernDialog("로드 완료", $"{successCount}개의 데이터를 그리드뷰에 불러왔습니다.");
-            }
-            catch (Exception ex)
-            {
-                this.WindowState = WindowState.Normal;
-                await ShowModernDialog("오류 발생", $"에러 내용: {ex.Message}");
-            }
-            finally
-            {
-                if (selectedRange != null && !(selectedRange is bool)) Marshal.ReleaseComObject(selectedRange);
-                if (excelApp != null) Marshal.ReleaseComObject(excelApp);
+                    // 컬럼 너비 자동 맞춤 기능
+                    if (DataListView.View is System.Windows.Controls.GridView gv)
+                    {
+                        foreach (var col in gv.Columns)
+                        {
+                            if (double.IsNaN(col.Width)) col.Width = col.ActualWidth;
+                            col.Width = double.NaN;
+                        }
+                    }
+
+                    await ShowModernDialog("로드 완료", $"{openFileDialog.SafeFileName} 파일에서 {successCount}개의 데이터를 불러왔습니다.");
+                }
+                catch (Exception ex)
+                {
+                    await ShowModernDialog("파일 읽기 오류", ex.Message);
+                }
             }
         }
 
+        // [Excel17InputUI 도면 입력 로직 완벽 복제]
         private async void BtnSubmit_Click(object sender, RoutedEventArgs e)
         {
-            if (_excelDataList.Count == 0)
+            if (_pointDataList.Count == 0)
             {
-                await ShowModernDialog("알림", "입력할 데이터가 없습니다. 먼저 엑셀에서 데이터를 로드하세요.");
+                await ShowModernDialog("알림", "입력할 데이터가 없습니다. 먼저 텍스트 파일을 로드하세요.");
                 return;
             }
 
@@ -139,7 +129,7 @@ namespace Kys_cad_plugin.Views
                 }
                 catch (Exception ex)
                 {
-                    await ShowModernDialog("도면 생성 실패", $"새 도면을 생성하는 중 오류가 발생했습니다: {ex.Message}");
+                    await ShowModernDialog("도면 생성 실패", $"새 도면 생성 오류: {ex.Message}");
                     return;
                 }
             }
@@ -177,18 +167,16 @@ namespace Kys_cad_plugin.Views
 
                         ObjectIdCollection textObjIds = new ObjectIdCollection();
 
-                        foreach (var data in _excelDataList)
+                        foreach (var data in _pointDataList)
                         {
                             Point3d center = new Point3d(data.X, data.Y, data.Z);
 
-                            // 1. 원 생성
+                            // 1. 원 생성 (선 가중치 0.40mm)
                             Circle circ = new Circle();
                             circ.Center = center;
                             circ.Radius = circleRad;
                             circ.LayerId = lyrId;
                             circ.ColorIndex = circleColorIdx;
-
-                            // [수정됨] 선 가중치(두께) 설정: 0.40mm 로 조금 더 두껍게 설정
                             circ.LineWeight = LineWeight.LineWeight040;
 
                             btr.AppendEntity(circ);
@@ -211,7 +199,7 @@ namespace Kys_cad_plugin.Views
                                 hat.EvaluateHatch(true);
                             }
 
-                            // 3. 텍스트 생성
+                            // 3. 텍스트 생성 (정중앙 정렬)
                             DBText txt = new DBText();
                             txt.TextString = data.Id;
                             txt.Height = textH;
@@ -226,6 +214,7 @@ namespace Kys_cad_plugin.Views
                             textObjIds.Add(txt.ObjectId);
                         }
 
+                        // 텍스트를 위로 올리기
                         if (textObjIds.Count > 0)
                         {
                             DrawOrderTable dot = tr.GetObject(btr.DrawOrderTableId, OpenMode.ForWrite) as DrawOrderTable;
@@ -233,7 +222,7 @@ namespace Kys_cad_plugin.Views
                         }
 
                         tr.Commit();
-                        await ShowModernDialog("입력 성공", $"{_excelDataList.Count}개의 데이터를 [{doc.Window.Text}] 도면에 생성했습니다.");
+                        await ShowModernDialog("입력 성공", $"{_pointDataList.Count}개의 데이터를 [{doc.Window.Text}] 도면에 생성했습니다.");
                     }
                 }
             }

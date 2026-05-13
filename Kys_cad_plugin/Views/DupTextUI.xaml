@@ -1,0 +1,153 @@
+﻿<ui:FluentWindow x:Class="Kys_cad_plugin.Views.DupTextUI"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                 Title="도면 내 중복 텍스트 검사" 
+                 Width="800" Height="650"
+                 WindowStartupLocation="CenterScreen"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica"
+                 Background="{DynamicResource ApplicationBackgroundBrush}"
+                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                 FontFamily="Segoe UI, Malgun Gothic"
+                 SnapsToDevicePixels="True">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="도면 내 중복 텍스트 검사" Padding="15,5"/>
+
+        <Grid Grid.Row="1" Margin="25,10,25,25">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="15"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ui:Card Grid.Column="0" Padding="15" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="15"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0">
+                        <StackPanel VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                <ui:SymbolIcon Symbol="Layer24" Margin="0,0,8,0" Filled="True" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                <TextBlock Text="검사 제외 도면층" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock Text="체크된 도면층은 검사하지 않습니다." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+
+                        <ui:Button HorizontalAlignment="Right" VerticalAlignment="Top" Appearance="Transparent" Padding="5" Click="BtnRefreshLayers_Click" ToolTip="도면층 목록 새로고침">
+                            <ui:SymbolIcon Symbol="ArrowCounterclockwise24" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </ui:Button>
+                    </Grid>
+
+                    <Border Grid.Row="2" Background="{DynamicResource ControlFillColorDefaultBrush}" BorderBrush="{DynamicResource ControlElevationBorderBrush}" BorderThickness="1" CornerRadius="6" Padding="5">
+                        <ListView x:Name="LayerListView" Background="Transparent" BorderThickness="0" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding Name}" IsChecked="{Binding IsExcluded, Mode=TwoWay}" Margin="0,3" Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Border>
+                </Grid>
+            </ui:Card>
+
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="15"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="15"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <ui:Card Grid.Row="0" Padding="20">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="15"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0">
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                <iconPacks:PackIconFontAwesome Kind="CopySolid" Width="18" Height="18" Margin="0,0,8,0" Foreground="#8764B8" VerticalAlignment="Center"/>
+                                <TextBlock Text="중복 데이터 스캔" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <TextBlock Text="제외할 도면층을 뺀 나머지 도면 전체에서 중복을 찾습니다." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        </StackPanel>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="스캔 완료 후 객체 선택 방식" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5"/>
+                                <ComboBox x:Name="CboSelectMode" SelectedIndex="1" HorizontalAlignment="Stretch">
+                                    <ComboBoxItem Content="모든 중복 객체 선택"/>
+                                    <ComboBoxItem Content="1개 남기고 나머지 선택 (삭제용)"/>
+                                    <ComboBoxItem Content="그룹당 딱 1개만 대표로 선택"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <ui:Button Grid.Column="2" x:Name="BtnScanDup" Appearance="Primary" Padding="20,10" VerticalAlignment="Bottom" Click="BtnScanDup_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="Search24" Margin="0,0,8,0"/>
+                                    <TextBlock Text="중복 검사 시작" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </ui:Button>
+                        </Grid>
+                    </Grid>
+                </ui:Card>
+
+                <ui:Card Grid.Row="2" Padding="20" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="TextBulletList24" Margin="0,0,8,0" Foreground="#8764B8"/>
+                            <TextBlock Text="중복된 텍스트 목록" FontWeight="Bold" FontSize="12" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <ui:TextBox Grid.Row="2" x:Name="TxtDupList" 
+                                    IsReadOnly="True" 
+                                    AcceptsReturn="True" 
+                                    TextWrapping="Wrap" 
+                                    VerticalContentAlignment="Top"
+                                    ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                    PlaceholderText="검사 시작 버튼을 누르면 중복된 텍스트가 여기에 나열됩니다."
+                                    Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                    FontSize="13"/>
+                    </Grid>
+                </ui:Card>
+
+                <ui:Card Grid.Row="4" Padding="12">
+                    <Grid>
+                        <TextBlock x:Name="TxtStatus" Text="상태: 대기 중" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <TextBlock Text="실제로 선택된 객체 수: " FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtCount" Text="0" FontSize="14" FontWeight="Bold" Foreground="#8764B8" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </ui:Card>
+            </Grid>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

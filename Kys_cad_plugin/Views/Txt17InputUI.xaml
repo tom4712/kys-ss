@@ -1,9 +1,9 @@
-﻿<ui:FluentWindow x:Class="Kys_cad_plugin.Views.Excel17InputUI"
+﻿<ui:FluentWindow x:Class="Kys_cad_plugin.Views.Txt17InputUI"
                  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-                 Title="17사 엑셀 좌표 입력기" 
+                 Title="17사 TXT 좌표 입력기" 
                  Width="1050" Height="750"
                  WindowStartupLocation="CenterScreen"
                  ExtendsContentIntoTitleBar="True"
@@ -31,10 +31,7 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="GridViewColumnHeader">
-                            <Border Background="{TemplateBinding Background}"
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    Padding="{TemplateBinding Padding}">
+                            <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Padding="{TemplateBinding Padding}">
                                 <ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True"/>
                             </Border>
                         </ControlTemplate>
@@ -72,7 +69,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <ui:TitleBar Grid.Row="0" Title="17사 엑셀 좌표 입력기" Padding="15,5"/>
+        <ui:TitleBar Grid.Row="0" Title="17사 TXT 좌표 입력기" Padding="15,5"/>
 
         <Grid Grid.Row="1" Margin="20,10,20,20">
             <Grid.ColumnDefinitions>
@@ -94,26 +91,19 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <iconPacks:PackIconFontAwesome Grid.Column="0" Kind="FileExcelRegular" Width="24" Height="24" Foreground="#217346" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                        <iconPacks:PackIconFontAwesome Grid.Column="0" Kind="FileLinesRegular" Width="24" Height="24" Foreground="#2B579A" VerticalAlignment="Center" Margin="0,0,15,0"/>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="Excel Data View" FontSize="16" FontWeight="SemiBold"/>
-                            <TextBlock Text="원만들고 해치하고 텍스트 넣기를 좌표로 딸깍~" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <TextBlock Text="TXT/CSV Data View" FontSize="16" FontWeight="SemiBold"/>
+                            <TextBlock Text="텍스트 파일을 불러와 좌표를 확인하세요." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                         </StackPanel>
-                        <ui:Button Grid.Column="2" x:Name="BtnLoadExcel" Appearance="Success" Click="BtnLoadExcel_Click" Icon="{ui:SymbolIcon Symbol=FolderOpen24}">
-                            <TextBlock Text="엑셀 범위지정" FontWeight="SemiBold"/>
+                        <ui:Button Grid.Column="2" x:Name="BtnLoadTxt" Appearance="Info" Click="BtnLoadTxt_Click" Icon="{ui:SymbolIcon Symbol=DocumentSearch24}">
+                            <TextBlock Text="파일 불러오기" FontWeight="SemiBold"/>
                         </ui:Button>
                     </Grid>
                 </ui:Card>
 
-                <ui:Card Grid.Row="1" Padding="0" Margin="0,5,0,0" 
-                         VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Top">
-                    <ListView x:Name="ExcelListView" 
-                              BorderThickness="0" 
-                              Background="Transparent"
-                              VerticalAlignment="Stretch" 
-                              HorizontalAlignment="Stretch"
-                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                              ScrollViewer.VerticalScrollBarVisibility="Auto">
+                <ui:Card Grid.Row="1" Padding="0" Margin="0,5,0,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalContentAlignment="Top">
+                    <ListView x:Name="DataListView" BorderThickness="0" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="ID" Width="80">
@@ -123,7 +113,6 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-
                                 <GridViewColumn Header="X (Easting)" Width="120">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
@@ -131,7 +120,6 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-
                                 <GridViewColumn Header="Y (Northing)" Width="120">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
@@ -139,7 +127,6 @@
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>
-
                                 <GridViewColumn Header="Z (Level)" Width="100">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
@@ -218,7 +205,7 @@
 
                         <StackPanel Grid.Row="1" Margin="0,0,0,22">
                             <TextBlock Text="텍스트 색상" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                            <ComboBox x:Name="CboTextColor" HorizontalAlignment="Stretch" SelectedIndex="0">
+                            <ComboBox x:Name="CboTextColor" HorizontalAlignment="Stretch" SelectedIndex="6">
                                 <ComboBoxItem Content="Red (1)"/>
                                 <ComboBoxItem Content="Yellow (2)"/>
                                 <ComboBoxItem Content="Green (3)"/>
@@ -243,11 +230,11 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="원 크기" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                <ui:TextBox x:Name="TxtCircleSize" Text="100.0" TextAlignment="Right" Icon="{ui:SymbolIcon Symbol=Target24}"/>
+                                <ui:TextBox x:Name="TxtCircleSize" Text="50.0" TextAlignment="Right" Icon="{ui:SymbolIcon Symbol=Target24}"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="텍스트 크기" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                <ui:TextBox x:Name="TxtTextSize" Text="60.0" TextAlignment="Right" Icon="{ui:SymbolIcon Symbol=TextFontSize24}"/>
+                                <ui:TextBox x:Name="TxtTextSize" Text="100.0" TextAlignment="Right" Icon="{ui:SymbolIcon Symbol=TextFontSize24}"/>
                             </StackPanel>
                         </Grid>
 

@@ -39,25 +39,32 @@
             <TextBlock Text="하단의 [License 확인] 버튼을 눌러 인증해주세요." FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" HorizontalAlignment="Center" Margin="0,5,0,0"/>
         </StackPanel>
 
-        <ui:Button Grid.Row="2" 
-                   Margin="10" 
-                   HorizontalAlignment="Stretch" 
-                   Appearance="Secondary"
-                   Click="LicenseButton_Click">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <iconPacks:PackIconFontAwesome Kind="CertificateSolid" 
-                                             Foreground="#FFD700" 
-                                             Width="16" 
-                                             Height="16" 
-                                             Margin="0,0,8,0"
-                                             VerticalAlignment="Center"/>
-                <TextBlock x:Name="LicenseBtnText"
-                           Text="License 확인" 
-                           FontWeight="SemiBold" 
-                           VerticalAlignment="Center"
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
-            </StackPanel>
-        </ui:Button>
+        <StackPanel Grid.Row="2" Margin="10">
+            <ui:ToggleSwitch x:Name="ToggleMaster" 
+                             Content="플러그인 명령어 활성화" 
+                             FontSize="11" 
+                             FontWeight="Normal"
+                             Margin="0,0,0,8"
+                             HorizontalAlignment="Left"/>
+
+            <ui:Button HorizontalAlignment="Stretch" 
+                       Appearance="Secondary"
+                       Click="LicenseButton_Click">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <iconPacks:PackIconFontAwesome Kind="CertificateSolid" 
+                                                 Foreground="#FFD700" 
+                                                 Width="16" 
+                                                 Height="16" 
+                                                 Margin="0,0,8,0"
+                                                 VerticalAlignment="Center"/>
+                    <TextBlock x:Name="LicenseBtnText"
+                               Text="License 확인" 
+                               FontWeight="SemiBold" 
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
+                </StackPanel>
+            </ui:Button>
+        </StackPanel>
 
         <ContentPresenter x:Name="DialogHost" Grid.Row="0" Grid.RowSpan="3" />
     </Grid>

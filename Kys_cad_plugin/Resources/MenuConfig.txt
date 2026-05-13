@@ -1,14 +1,23 @@
 ﻿@Excel 관련
 #좌표 입력\FileExcelSolid\ExcelInputUI\#217346
 #좌표 수집\TableSolid\ExcelCollectUI\#217346
-#17사 입력\FileExcel17\Excel17InputUI\#217346
+#17사 입력\BoltSolid\Excel17InputUI\#217346
 @txt 관련
 #좌표 입력\FileLinesSolid\TxtInputUI\#2B579A
-#좌표 수집\FileMagnifyingGlassSolid\TxtCollectUI\#2B579A
+#좌표 수집\TableSolid\TxtCollectUI\#2B579A
+#17사 입력\BoltSolid\Txt17InputUI\#2B579A
 @좌표 관련
 #DWG 좌표변환\LocationCrosshairsSolid\DwgCoordUI\#D83B01
 #객체 좌표변환\DrawPolygonSolid\ObjCoordUI\#D83B01
+@물량 확인
+#코스별 매수 확인\RouteSolid\CourseCountUI\#009688
+#블럭 필터\FilterSolid\BlockFilterUI\#009688
 @객체선택
-#특정문자 선택\ArrowPointerSolid\SelectCharUI\#8764B8
-#중복텍스트 선택\CopySolid\DupTextUI\#8764B8
-#특정문자 제외 선택\FilterCircleXmarkSolid\ExcludeCharUI\#E81123
+#특정문자 검색\ArrowPointerSolid\SelectCharUI\#8764B8
+#중복텍스트 검사\CopySolid\DupTextUI\#8764B8
+@파일생성 & 포멧변경
+#폴리선 -> SHP\MapSolid\AreaToShpUI\#27AE60
+#주점 -> SHP\LocationDotSolid\PointToShpUI\#27AE60
+#외부표정요소 -> TFW\FileExportSolid\EoToTfwUI\#27AE60
+#외부표정요소 -> 영역 SHP\DrawPolygonSolid\EoToAreaShpUI\#27AE60
+#외부표정요소 -> 범위SHP\DrawPolygonSolid\EoToExtentShpUI\#27AE60

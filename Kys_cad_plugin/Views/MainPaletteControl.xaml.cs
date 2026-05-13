@@ -230,6 +230,13 @@ namespace Kys_cad_plugin.Views
 
             // 4. 화면이 사용자에게 "보인 직후"에 라이선스 검사 및 메뉴 로드 실행
             this.Loaded += UserControl_Loaded;
+
+            // 레지스트리에서 불러온 값 UI에 반영
+            ToggleMaster.IsChecked = CommandSettings.IsPluginEnabled;
+
+            // 이벤트 연결
+            ToggleMaster.Checked += (s, e) => CommandSettings.IsPluginEnabled = true;
+            ToggleMaster.Unchecked += (s, e) => CommandSettings.IsPluginEnabled = false;
         }
 
         private void LoadMenuFromTextFile()

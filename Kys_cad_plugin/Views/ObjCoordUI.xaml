@@ -1,0 +1,134 @@
+﻿<ui:FluentWindow x:Class="Kys_cad_plugin.Views.ObjCoordUI"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                 Title="도면 내 객체 좌표계 변환" 
+                 Width="600" Height="750"
+                 WindowStartupLocation="CenterScreen"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica"
+                 Background="{DynamicResource ApplicationBackgroundBrush}"
+                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                 FontFamily="Segoe UI, Malgun Gothic"
+                 SnapsToDevicePixels="True">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="도면 내 객체 좌표계 변환" Padding="15,5"/>
+
+        <Grid Grid.Row="1" Margin="25,10,25,25">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="15"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <ui:Card Grid.Row="0" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="15"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                            <iconPacks:PackIconFontAwesome Kind="DrawPolygonSolid" Width="18" Height="18" Margin="0,0,8,0" Foreground="#D83B01" VerticalAlignment="Center"/>
+                            <TextBlock Text="변환할 객체 선택" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock Text="도면에서 좌표계를 변환할 객체들을 드래그하여 선택하세요." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="15"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Background="{DynamicResource SubtleFillColorSecondaryBrush}" CornerRadius="6" Padding="15,0">
+                            <Grid>
+                                <TextBlock Text="선택된 객체 수" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtSelectedCount" Text="0" FontSize="18" FontWeight="Bold" Foreground="#D83B01"/>
+                                    <TextBlock Text=" 개" FontSize="12" Margin="2,0,0,2" VerticalAlignment="Bottom" Opacity="0.8"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <ui:Button Grid.Column="2" x:Name="BtnSelectObjects" Appearance="Secondary" Height="45" Padding="20,0" Click="BtnSelectObjects_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <ui:SymbolIcon Symbol="SelectObject24" Margin="0,0,8,0"/>
+                                <TextBlock Text="도면에서 객체 선택" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </ui:Button>
+                    </Grid>
+                </Grid>
+            </ui:Card>
+
+            <ui:Card Grid.Row="2" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="15"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                        <ui:SymbolIcon Symbol="Earth24" Margin="0,0,8,0" Filled="True" Foreground="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                        <TextBlock Text="좌표계 변환 설정" FontWeight="Bold" FontSize="14"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="원본(Source) 좌표계" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <ComboBox x:Name="CboSourceCS" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+
+                        <iconPacks:PackIconFontAwesome Grid.Column="1" Kind="ArrowRightSolid" Width="16" Height="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,10" Foreground="{DynamicResource TextFillColorTertiaryBrush}"/>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="변경(Target) 좌표계" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                            <ComboBox x:Name="CboTargetCS" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </ui:Card>
+
+            <ui:Card Grid.Row="4" Padding="15" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="실행 로그" FontWeight="Bold" FontSize="12" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <ListBox Grid.Row="1" x:Name="LogListBox" Background="{DynamicResource ControlFillColorDefaultBrush}" BorderBrush="{DynamicResource ControlElevationBorderBrush}" BorderThickness="1" ScrollViewer.VerticalScrollBarVisibility="Auto" Padding="5">
+                        <TextBlock Text="▶ 변환할 객체를 선택해 주세요." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="2"/>
+                    </ListBox>
+                </Grid>
+            </ui:Card>
+
+            <ui:Button Grid.Row="6" x:Name="BtnTransform" Appearance="info" Height="55" HorizontalAlignment="Stretch" Click="BtnTransform_Click">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconFontAwesome Kind="DrawPolygonSolid" Width="18" Height="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="선택 객체 좌표 변환 실행" FontWeight="Bold" FontSize="16" VerticalAlignment="Center"/>
+                </StackPanel>
+            </ui:Button>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

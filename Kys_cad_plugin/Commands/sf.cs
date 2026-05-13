@@ -1,7 +1,8 @@
-﻿using Autodesk.AutoCAD.Runtime;
-using Autodesk.AutoCAD.ApplicationServices;
+﻿using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.Runtime;
+using Kys_cad_plugin.Core;
 
 namespace Kys_cad_plugin.Commands
 {
@@ -11,6 +12,15 @@ namespace Kys_cad_plugin.Commands
         public void LayerFreezeOthers()
         {
             Document doc = Application.DocumentManager.MdiActiveDocument;
+
+            // 마스터 스위치가 꺼져 있는 경우
+            if (!CommandSettings.IsPluginEnabled)
+            {
+                // ★ 핵심: C# 기능을 종료하고, 기존 LSP의 'c:sf' 함수를 강제로 실행시킵니다.
+                // (if c:sf ...) 구문을 통해 해당 리습이 로드되어 있는지 확인 후 실행하여 에러를 방지합니다.
+                doc.SendStringToExecute("(if c:sf (c:sf)) ", true, false, false);
+                return;
+            }
             Database db = doc.Database;
             Editor ed = doc.Editor;
 
