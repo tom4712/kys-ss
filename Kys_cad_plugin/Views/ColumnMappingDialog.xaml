@@ -1,0 +1,72 @@
+﻿<ui:FluentWindow x:Class="Kys_cad_plugin.Views.ColumnMappingDialog"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 Title="데이터 열 매핑 및 시작 설정" 
+                 Width="500" Height="680"
+                 MinWidth="450" MinHeight="500"
+                 WindowStartupLocation="CenterOwner"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica"
+                 ResizeMode="CanResizeWithGrip"
+                 Background="{DynamicResource ApplicationBackgroundBrush}"
+                 Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                 SnapsToDevicePixels="True">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" 
+                     Title="데이터 열 매핑 및 시작 설정" 
+                     Icon="{ui:SymbolIcon Symbol=TableSettings24}"/>
+
+        <Grid Grid.Row="1" Margin="20,5,20,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <ui:Card Grid.Row="0" Padding="15" Background="{DynamicResource ControlFillColorSecondaryBrush}" Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="데이터 미리보기 (파일의 첫 번째 줄)" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="TxtPreview" FontWeight="SemiBold" TextWrapping="Wrap" MaxHeight="60" VerticalAlignment="Center"/>
+                </StackPanel>
+            </ui:Card>
+
+            <ui:Card Grid.Row="1" Padding="15" Margin="0,0,0,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="데이터 시작 행 번호" FontWeight="Bold" FontSize="13"/>
+                        <TextBlock Text="헤더가 있으면 2, 데이터만 있으면 1" FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
+                    <ui:NumberBox Grid.Column="1" x:Name="NumStartRow" 
+                                 Value="1"
+                                 Width="150" Height="38"
+                                 VerticalAlignment="Center" 
+                                 SpinButtonPlacementMode="Inline"
+                                 ClearButtonEnabled="False"/>
+                </Grid>
+            </ui:Card>
+
+            <ui:Card Grid.Row="2" Padding="15">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel x:Name="DynamicFieldsPanel"/>
+                </ScrollViewer>
+            </ui:Card>
+
+            <Grid Grid.Row="3" Margin="0,15,0,0">
+                <ui:Button Content="취소" Width="100" HorizontalAlignment="Left" Click="BtnCancel_Click" Appearance="Secondary"/>
+                <ui:Button Content="설정 완료 및 로드" Width="160" HorizontalAlignment="Right" Appearance="Primary" Background="#27AE60" BorderBrush="#27AE60" Click="BtnOk_Click"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

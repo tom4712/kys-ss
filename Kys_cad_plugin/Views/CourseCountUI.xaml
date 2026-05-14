@@ -115,8 +115,8 @@
                             </StackPanel>
                             <ui:Button HorizontalAlignment="Right" Appearance="Secondary" Padding="15,5" Click="BtnCopyToExcel_Click">
                                 <StackPanel Orientation="Horizontal">
-                                    <iconPacks:PackIconFontAwesome Kind="FileExcelRegular" Width="14" Height="14" Margin="0,0,8,0" Foreground="#217346"/>
-                                    <TextBlock Text="클립보드 복사 (엑셀용)" FontSize="12" FontWeight="SemiBold"/>
+                                    <iconPacks:PackIconFontAwesome Kind="FileArrowDownSolid" Width="14" Height="14" Margin="0,0,8,0" Foreground="AliceBlue"/>
+                                    <TextBlock Text="내보내기" FontSize="12" FontWeight="SemiBold"/>
                                 </StackPanel>
                             </ui:Button>
                         </Grid>

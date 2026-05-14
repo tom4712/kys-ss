@@ -1,10 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Text;
 using System.Windows;
-using Microsoft.Win32;
 using Wpf.Ui.Controls;
+using Kys_cad_plugin.Core; // 중앙 매니저 참조
 
 // 오토캐드 API 참조
 using Autodesk.AutoCAD.ApplicationServices;
@@ -40,74 +39,45 @@ namespace Kys_cad_plugin.Views
             CboDrawingSelect.SelectedIndex = 0;
         }
 
-        // TXT/CSV 파일 로드 로직 (FileShare.ReadWrite 적용)
+        // ★ 중앙 집중식 파일 로드 호출 부분
         private async void BtnLoadTxt_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            // 1. 이 UI에서 필요한 데이터 필드 정의 (순서대로 콤보박스가 생성됨)
+            var targetFields = new List<string> { "ID (이름)", "X 좌표", "Y 좌표", "Z 고도" };
+
+            // 2. 중앙 매니저에게 모든 작업을 위임 (파일열기, 매핑팝업, 파싱)
+            var result = await DataImportManager.ImportAndMap(this, targetFields);
+
+            // 3. 결과가 돌아오면 UI 리스트에 바인딩
+            if (result != null && result.Rows.Count > 0)
             {
-                Filter = "좌표 데이터 파일 (*.txt;*.csv)|*.txt;*.csv|모든 파일 (*.*)|*.*",
-                Title = "좌표 데이터 파일 선택"
-            };
-
-            if (openFileDialog.ShowDialog() == true)
-            {
-                try
+                _pointDataList.Clear();
+                foreach (var row in result.Rows)
                 {
-                    _pointDataList.Clear();
-                    int successCount = 0;
-
-                    using (FileStream fs = new FileStream(openFileDialog.FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                    using (StreamReader sr = new StreamReader(fs, Encoding.Default))
+                    try
                     {
-                        string line;
-                        while ((line = sr.ReadLine()) != null)
+                        _pointDataList.Add(new ExcelPointData
                         {
-                            if (string.IsNullOrWhiteSpace(line)) continue;
-
-                            string[] parts = line.Split(new char[] { ',', '\t', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
-                            if (parts.Length >= 4)
-                            {
-                                try
-                                {
-                                    var data = new ExcelPointData
-                                    {
-                                        Id = parts[0],
-                                        X = double.Parse(parts[1]),
-                                        Y = double.Parse(parts[2]),
-                                        Z = double.Parse(parts[3])
-                                    };
-
-                                    if (successCount == 0 && !double.TryParse(parts[1], out _) && data.X == 0) continue;
-
-                                    _pointDataList.Add(data);
-                                    successCount++;
-                                }
-                                catch { }
-                            }
-                        }
+                            // 딕셔너리 키는 위에서 정의한 targetFields의 이름과 동일함
+                            Id = row["ID (이름)"],
+                            X = double.Parse(row["X 좌표"]),
+                            Y = double.Parse(row["Y 좌표"]),
+                            Z = double.Parse(row["Z 고도"])
+                        });
                     }
-
-                    // 컬럼 너비 자동 맞춤 기능
-                    if (DataListView.View is System.Windows.Controls.GridView gv)
-                    {
-                        foreach (var col in gv.Columns)
-                        {
-                            if (double.IsNaN(col.Width)) col.Width = col.ActualWidth;
-                            col.Width = double.NaN;
-                        }
-                    }
-
-                    await ShowModernDialog("로드 완료", $"{openFileDialog.SafeFileName} 파일에서 {successCount}개의 데이터를 불러왔습니다.");
+                    catch { }
                 }
-                catch (Exception ex)
+
+                if (DataListView.View is System.Windows.Controls.GridView gv)
                 {
-                    await ShowModernDialog("파일 읽기 오류", ex.Message);
+                    foreach (var col in gv.Columns) col.Width = col.ActualWidth;
+                    foreach (var col in gv.Columns) col.Width = double.NaN;
                 }
+
+                await ShowModernDialog("임포트 완료", $"{result.FileName} 파일에서 {result.SuccessCount}개의 데이터를 성공적으로 분류했습니다.");
             }
         }
 
-        // [Excel17InputUI 도면 입력 로직 완벽 복제]
         private async void BtnSubmit_Click(object sender, RoutedEventArgs e)
         {
             if (_pointDataList.Count == 0)
@@ -141,19 +111,14 @@ namespace Kys_cad_plugin.Views
             if (doc == null) return;
 
             Database db = doc.Database;
-
             string layerName = string.IsNullOrWhiteSpace(TxtLayerName.Text) ? "17_COORDINATES" : TxtLayerName.Text;
             double circleRad = double.TryParse(TxtCircleSize.Text, out double r) ? r : 50.0;
             double textH = double.TryParse(TxtTextSize.Text, out double h) ? h : 100.0;
 
-            string circleColorStr = (CboCircleColor.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "";
-            string fillColorStr = (CboFillColor.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "";
-            string textColorStr = (CboTextColor.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "";
-
-            short circleColorIdx = GetColorIndex(circleColorStr);
-            short fillColorIdx = GetColorIndex(fillColorStr);
-            short textColorIdx = GetColorIndex(textColorStr);
-            bool useFill = !fillColorStr.Contains("None");
+            short circleColorIdx = GetColorIndex((CboCircleColor.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString());
+            short fillColorIdx = GetColorIndex((CboFillColor.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString());
+            short textColorIdx = GetColorIndex((CboTextColor.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString());
+            bool useFill = !((CboFillColor.SelectedItem as System.Windows.Controls.ComboBoxItem)?.Content?.ToString() ?? "").Contains("None");
 
             try
             {
@@ -170,51 +135,28 @@ namespace Kys_cad_plugin.Views
                         foreach (var data in _pointDataList)
                         {
                             Point3d center = new Point3d(data.X, data.Y, data.Z);
-
-                            // 1. 원 생성 (선 가중치 0.40mm)
-                            Circle circ = new Circle();
-                            circ.Center = center;
-                            circ.Radius = circleRad;
-                            circ.LayerId = lyrId;
-                            circ.ColorIndex = circleColorIdx;
-                            circ.LineWeight = LineWeight.LineWeight040;
-
+                            Circle circ = new Circle { Center = center, Radius = circleRad, LayerId = lyrId, ColorIndex = circleColorIdx, LineWeight = LineWeight.LineWeight040 };
                             btr.AppendEntity(circ);
                             tr.AddNewlyCreatedDBObject(circ, true);
 
-                            // 2. 해치(채우기) 생성
                             if (useFill)
                             {
                                 Hatch hat = new Hatch();
                                 hat.SetHatchPattern(HatchPatternType.PreDefined, "SOLID");
                                 hat.LayerId = lyrId;
                                 hat.ColorIndex = fillColorIdx;
-
                                 btr.AppendEntity(hat);
                                 tr.AddNewlyCreatedDBObject(hat, true);
-
-                                ObjectIdCollection ids = new ObjectIdCollection();
-                                ids.Add(circ.ObjectId);
-                                hat.AppendLoop(HatchLoopTypes.Default, ids);
+                                hat.AppendLoop(HatchLoopTypes.Default, new ObjectIdCollection { circ.ObjectId });
                                 hat.EvaluateHatch(true);
                             }
 
-                            // 3. 텍스트 생성 (정중앙 정렬)
-                            DBText txt = new DBText();
-                            txt.TextString = data.Id;
-                            txt.Height = textH;
-                            txt.LayerId = lyrId;
-                            txt.ColorIndex = textColorIdx;
-                            txt.Justify = AttachmentPoint.MiddleCenter;
-                            txt.AlignmentPoint = center;
-
+                            DBText txt = new DBText { TextString = data.Id, Height = textH, LayerId = lyrId, ColorIndex = textColorIdx, Justify = AttachmentPoint.MiddleCenter, AlignmentPoint = center };
                             btr.AppendEntity(txt);
                             tr.AddNewlyCreatedDBObject(txt, true);
-
                             textObjIds.Add(txt.ObjectId);
                         }
 
-                        // 텍스트를 위로 올리기
                         if (textObjIds.Count > 0)
                         {
                             DrawOrderTable dot = tr.GetObject(btr.DrawOrderTableId, OpenMode.ForWrite) as DrawOrderTable;
@@ -226,10 +168,7 @@ namespace Kys_cad_plugin.Views
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                await ShowModernDialog("캐드 입력 오류", ex.Message);
-            }
+            catch (Exception ex) { await ShowModernDialog("캐드 입력 오류", ex.Message); }
         }
 
         private short GetColorIndex(string text)
@@ -237,13 +176,8 @@ namespace Kys_cad_plugin.Views
             try
             {
                 if (string.IsNullOrEmpty(text) || text.Contains("None")) return 7;
-                int start = text.IndexOf('(');
-                int end = text.IndexOf(')');
-                if (start != -1 && end != -1)
-                {
-                    string num = text.Substring(start + 1, end - start - 1);
-                    return short.Parse(num);
-                }
+                int start = text.IndexOf('('); int end = text.IndexOf(')');
+                if (start != -1 && end != -1) return short.Parse(text.Substring(start + 1, end - start - 1));
             }
             catch { }
             return 7;
@@ -253,7 +187,6 @@ namespace Kys_cad_plugin.Views
         {
             LayerTable lt = tr.GetObject(db.LayerTableId, OpenMode.ForRead) as LayerTable;
             if (lt.Has(name)) return lt[name];
-
             lt.UpgradeOpen();
             LayerTableRecord ltr = new LayerTableRecord { Name = name };
             ObjectId id = lt.Add(ltr);
@@ -263,16 +196,7 @@ namespace Kys_cad_plugin.Views
 
         private async System.Threading.Tasks.Task ShowModernDialog(string title, string content)
         {
-            var msgBox = new Wpf.Ui.Controls.MessageBox
-            {
-                Title = title,
-                Content = new System.Windows.Controls.TextBlock { Text = content, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(10) },
-                CloseButtonText = "확인",
-                Owner = this,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Width = 400,
-                Height = 200
-            };
+            var msgBox = new Wpf.Ui.Controls.MessageBox { Title = title, Content = new System.Windows.Controls.TextBlock { Text = content, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(10) }, CloseButtonText = "확인", Owner = this, WindowStartupLocation = WindowStartupLocation.CenterOwner, Width = 400, Height = 200 };
             Wpf.Ui.Appearance.ApplicationThemeManager.Apply(msgBox);
             await msgBox.ShowDialogAsync();
         }

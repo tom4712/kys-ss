@@ -21,3 +21,4 @@
 #외부표정요소 -> TFW\FileExportSolid\EoToTfwUI\#27AE60
 #외부표정요소 -> 영역 SHP\DrawPolygonSolid\EoToAreaShpUI\#27AE60
 #외부표정요소 -> 범위SHP\DrawPolygonSolid\EoToExtentShpUI\#27AE60
+#PRJ 생성 -> File\CompassSolid\PrjGeneratorUI\#3498DB

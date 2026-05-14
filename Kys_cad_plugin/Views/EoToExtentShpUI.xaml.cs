@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Wpf.Ui.Controls;
+using Kys_cad_plugin.Core; // ★ 중앙 데이터 매니저 참조 추가
 
 // GIS 라이브러리
 using NetTopologySuite.Features;
@@ -31,6 +32,8 @@ namespace Kys_cad_plugin.Views
         public double X { get; set; }
         public double Y { get; set; }
         public double Z { get; set; }
+        public double Omega { get; set; } // ★ 7컬럼 대응을 위한 추가
+        public double Phi { get; set; }   // ★ 7컬럼 대응을 위한 추가
         public double Kappa { get; set; }
     }
 
@@ -44,7 +47,6 @@ namespace Kys_cad_plugin.Views
         private GeometryFactory _factory = new GeometryFactory();
 
         // 캔버스 드래그 이동(Pan) 제어용 변수
-        // ★ NTS의 Point와 충돌하지 않도록 System.Windows.Point로 명시
         private bool _isPanning = false;
         private System.Windows.Point _startPanPosition;
 
@@ -78,13 +80,12 @@ namespace Kys_cad_plugin.Views
             TxtWidth.IsReadOnly = TxtHeight.IsReadOnly = TxtFocal.IsReadOnly = TxtPixelSize.IsReadOnly = ro;
         }
 
+        // ★ [수정된 로직] 중앙 임포트 매니저 연동 및 외곽선(Union) 계산
         private async void BtnLoadEo_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog { Filter = "텍스트 파일 (*.txt;*.csv)|*.txt;*.csv" };
-            if (ofd.ShowDialog() != true) return;
-
             try
             {
+                // 센서 제원 유효성 확인
                 if (!double.TryParse(TxtFocal.Text, out double focal) || !double.TryParse(TxtPixelSize.Text, out double pxSizeMicron))
                 {
                     await ShowModernDialog("입력 오류", "초점거리와 픽셀크기 값을 확인해주세요.");
@@ -97,61 +98,87 @@ namespace Kys_cad_plugin.Views
                     return;
                 }
 
+                // 1. 필요한 7개 필드 정의 (통일성 유지)
+                var targetFields = new List<string> { "ID", "X", "Y", "Z", "Omega", "Phi", "Kappa" };
+
+                // 2. 중앙 매니저 호출 (파일 로드 및 매핑 팝업)
+                var result = await DataImportManager.ImportAndMap(this, targetFields);
+
+                if (result == null || result.Rows.Count == 0) return;
+
+                // 3. UI 및 상태 초기화
                 double pxSizeM = pxSizeMicron / 1000000.0;
                 _eoList.Clear();
                 _baseMergedGeometry = null;
                 _bufferedGeometry = null;
                 PreviewCanvas.Children.Clear();
+                PrgStatus.Value = 0;
+                TxtStatus.Text = "영역 분석 중...";
 
-                string[] lines = File.ReadAllLines(ofd.FileName, Encoding.Default);
                 List<NtsGeometry> allPolygons = new List<NtsGeometry>();
+                int totalRows = result.Rows.Count;
 
+                // 4. 비동기 영역 계산 및 병합(Union) 처리
                 await Task.Run(() => {
                     int idx = 0;
-                    foreach (string line in lines)
+                    foreach (var row in result.Rows)
                     {
-                        string[] p = line.Split(new char[] { '\t', ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
-                        if (p.Length >= 7)
+                        try
                         {
-                            try
+                            var eo = new EoExtentRecord
                             {
-                                var eo = new EoExtentRecord { Id = p[0], X = double.Parse(p[1]), Y = double.Parse(p[2]), Z = double.Parse(p[3]), Kappa = double.Parse(p[6]) };
+                                Id = row["ID"],
+                                X = double.Parse(row["X"]),
+                                Y = double.Parse(row["Y"]),
+                                Z = double.Parse(row["Z"]),
+                                Omega = double.Parse(row["Omega"]),
+                                Phi = double.Parse(row["Phi"]),
+                                Kappa = double.Parse(row["Kappa"])
+                            };
 
-                                double gsd = (eo.Z / focal) * pxSizeM;
-                                double kRad = eo.Kappa * (Math.PI / 180.0);
-                                double hW = (wPx * gsd) / 2.0;
-                                double hH = (hPx * gsd) / 2.0;
+                            // 개별 영상 영역(Footprint) 계산
+                            double gsd = (eo.Z / focal) * pxSizeM;
+                            double kRad = eo.Kappa * (Math.PI / 180.0);
+                            double hW = (wPx * gsd) / 2.0;
+                            double hH = (hPx * gsd) / 2.0;
 
-                                Coordinate tl = Rotate(eo.X, eo.Y, -hW, hH, kRad);
-                                Coordinate tr = Rotate(eo.X, eo.Y, hW, hH, kRad);
-                                Coordinate br = Rotate(eo.X, eo.Y, hW, -hH, kRad);
-                                Coordinate bl = Rotate(eo.X, eo.Y, -hW, -hH, kRad);
+                            Coordinate tl = Rotate(eo.X, eo.Y, -hW, hH, kRad);
+                            Coordinate tr = Rotate(eo.X, eo.Y, hW, hH, kRad);
+                            Coordinate br = Rotate(eo.X, eo.Y, hW, -hH, kRad);
+                            Coordinate bl = Rotate(eo.X, eo.Y, -hW, -hH, kRad);
 
-                                var ring = _factory.CreateLinearRing(new[] { tl, tr, br, bl, tl });
-                                allPolygons.Add(_factory.CreatePolygon(ring));
+                            var ring = _factory.CreateLinearRing(new[] { tl, tr, br, bl, tl });
+                            allPolygons.Add(_factory.CreatePolygon(ring));
 
-                                Dispatcher.Invoke(() => {
-                                    _eoList.Add(eo);
-                                    idx++;
-                                    PrgStatus.Value = (double)idx / lines.Length * 100;
-                                    TxtStatus.Text = $"{idx} / {lines.Length} 스캔 중...";
-                                });
-                            }
-                            catch { }
+                            Dispatcher.Invoke(() => {
+                                _eoList.Add(eo);
+                                idx++;
+                                if (idx % 20 == 0 || idx == totalRows)
+                                {
+                                    PrgStatus.Value = (double)idx / totalRows * 100;
+                                    TxtStatus.Text = $"{idx} / {totalRows} 스캔 중...";
+                                }
+                            });
                         }
+                        catch { idx++; }
                     }
 
-                    Dispatcher.Invoke(() => TxtStatus.Text = "영역 병합(Union) 계산 중...");
-                    _baseMergedGeometry = CascadedPolygonUnion.Union(allPolygons);
+                    // 모든 영역을 하나로 병합 (CascadedUnion)
+                    if (allPolygons.Count > 0)
+                    {
+                        Dispatcher.Invoke(() => TxtStatus.Text = "영역 병합(Union) 계산 중...");
+                        _baseMergedGeometry = CascadedPolygonUnion.Union(allPolygons);
+                    }
                 });
 
+                // 병합 결과에 버퍼 적용 및 화면 그리기
                 ApplyBufferAndDraw();
 
                 await ShowModernDialog("분석 완료", $"총 {_eoList.Count}개의 EO 영역이 하나의 외곽선으로 병합되었습니다.");
             }
             catch (Exception ex)
             {
-                await ShowModernDialog("오류", $"파일 로드 중 오류 발생: {ex.Message}");
+                await ShowModernDialog("오류", $"파일 처리 중 오류 발생: {ex.Message}");
             }
         }
 
@@ -183,7 +210,7 @@ namespace Kys_cad_plugin.Views
                 _bufferedGeometry = _baseMergedGeometry.Buffer(bufferDist, bufferParams);
             }
 
-            // 면적을 m²에서 km²로 변경 산출 (1,000,000으로 나누기)
+            // 면적 계산 (km²)
             double areaSqKm = _bufferedGeometry.Area / 1000000.0;
             TxtAreaValue.Text = areaSqKm.ToString("N4");
 
@@ -199,6 +226,7 @@ namespace Kys_cad_plugin.Views
         {
             if (_bufferedGeometry == null || _bufferedGeometry.IsEmpty || PreviewCanvas.ActualWidth == 0) return;
 
+            // 캔버스 초기화
             CanvasScale.ScaleX = 1;
             CanvasScale.ScaleY = 1;
             CanvasTranslate.X = 0;
@@ -217,6 +245,7 @@ namespace Kys_cad_plugin.Views
             double canvasCx = PreviewCanvas.ActualWidth / 2;
             double canvasCy = PreviewCanvas.ActualHeight / 2;
 
+            // 버퍼가 적용된 바깥쪽 영역 그리기
             if (!ReferenceEquals(_baseMergedGeometry, _bufferedGeometry))
             {
                 DrawSingleGeometryToCanvas(_bufferedGeometry,
@@ -225,6 +254,7 @@ namespace Kys_cad_plugin.Views
                                            cx, cy, scale, canvasCx, canvasCy);
             }
 
+            // 원본 병합 영역 그리기
             if (_baseMergedGeometry != null && !_baseMergedGeometry.IsEmpty)
             {
                 DrawSingleGeometryToCanvas(_baseMergedGeometry,
@@ -276,7 +306,6 @@ namespace Kys_cad_plugin.Views
             return pf;
         }
 
-        // ★ System.Windows.Point 명시
         private System.Windows.Point MapPoint(Coordinate c, double cx, double cy, double scale, double canvasCx, double canvasCy)
         {
             double x = (c.X - cx) * scale + canvasCx;
@@ -284,14 +313,10 @@ namespace Kys_cad_plugin.Views
             return new System.Windows.Point(x, y);
         }
 
-        // ==========================================
-        // ★ 마우스 이벤트 처리 영역 (줌 & 팬)
-        // ==========================================
+        // 마우스 휠 줌 처리
         private void PreviewBorder_MouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
         {
             double zoomFactor = e.Delta > 0 ? 1.2 : (1.0 / 1.2);
-
-            // ★ System.Windows.Point 명시
             System.Windows.Point mousePos = e.GetPosition(PreviewCanvas);
 
             CanvasScale.ScaleX *= zoomFactor;
@@ -299,13 +324,12 @@ namespace Kys_cad_plugin.Views
 
             if (CanvasScale.ScaleX < 0.1) CanvasScale.ScaleX = 0.1;
             if (CanvasScale.ScaleX > 50) CanvasScale.ScaleX = 50;
-            if (CanvasScale.ScaleY < 0.1) CanvasScale.ScaleY = 0.1;
-            if (CanvasScale.ScaleY > 50) CanvasScale.ScaleY = 50;
 
             CanvasTranslate.X -= mousePos.X * (CanvasScale.ScaleX - CanvasScale.ScaleX / zoomFactor);
             CanvasTranslate.Y -= mousePos.Y * (CanvasScale.ScaleY - CanvasScale.ScaleY / zoomFactor);
         }
 
+        // 마우스 드래그 팬(Pan) 처리
         private void PreviewBorder_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             _isPanning = true;
@@ -317,38 +341,25 @@ namespace Kys_cad_plugin.Views
         {
             if (_isPanning)
             {
-                // ★ System.Windows.Point 및 System.Windows.Vector 명시
                 System.Windows.Point currentPos = e.GetPosition(PreviewBorder);
                 System.Windows.Vector delta = currentPos - _startPanPosition;
-
                 CanvasTranslate.X += delta.X;
                 CanvasTranslate.Y += delta.Y;
-
                 _startPanPosition = currentPos;
             }
         }
 
         private void PreviewBorder_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (_isPanning)
-            {
-                _isPanning = false;
-                PreviewBorder.ReleaseMouseCapture();
-            }
+            if (_isPanning) { _isPanning = false; PreviewBorder.ReleaseMouseCapture(); }
         }
 
         private void PreviewBorder_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if (_isPanning)
-            {
-                _isPanning = false;
-                PreviewBorder.ReleaseMouseCapture();
-            }
+            if (_isPanning) { _isPanning = false; PreviewBorder.ReleaseMouseCapture(); }
         }
 
-        // ==========================================
-        // SHP 파일 출력 영역
-        // ==========================================
+        // SHP 파일 출력
         private async void BtnExportShp_Click(object sender, RoutedEventArgs e)
         {
             if (_bufferedGeometry == null)
@@ -363,7 +374,6 @@ namespace Kys_cad_plugin.Views
             try
             {
                 var features = new List<Feature>();
-
                 double areaSqKm = _bufferedGeometry.Area / 1000000.0;
 
                 var attr = new AttributesTable();
