@@ -1,7 +1,6 @@
-﻿using System;
-using System.Drawing; // Size 객체 사용을 위해 필요
-using Autodesk.AutoCAD.Windows;
+﻿using Autodesk.AutoCAD.Windows;
 using Kys_cad_plugin.Views;
+using System.Drawing; // Size 객체 사용을 위해 필요
 
 namespace Kys_cad_plugin.Core
 {

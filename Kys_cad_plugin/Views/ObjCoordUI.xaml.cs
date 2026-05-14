@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows;
-using Wpf.Ui.Controls;
-
-// 오토캐드 API
+﻿// 오토캐드 API
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
-using CadApp = Autodesk.AutoCAD.ApplicationServices.Application;
-
 // 좌표 변환 API (ProjNet & GeoAPI)
-using GeoAPI.CoordinateSystems;
 using GeoAPI.CoordinateSystems.Transformations;
 using ProjNet.CoordinateSystems;
 using ProjNet.CoordinateSystems.Transformations;
+using System.Windows;
+using Wpf.Ui.Controls;
+using CadApp = Autodesk.AutoCAD.ApplicationServices.Application;
 
 namespace Kys_cad_plugin.Views
 {

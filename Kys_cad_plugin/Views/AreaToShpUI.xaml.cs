@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Windows;
-using Microsoft.Win32;
-using Wpf.Ui.Controls;
-
-// 오토캐드 API 참조
+﻿// 오토캐드 API 참조
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
-using CadApp = Autodesk.AutoCAD.ApplicationServices.Application;
-
+using Microsoft.Win32;
+using NetTopologySuite.Features;
 // NetTopologySuite (SHP 생성 라이브러리)
 using NetTopologySuite.Geometries;
-using NetTopologySuite.Features;
 using NetTopologySuite.IO;
+using System.Windows;
+using Wpf.Ui.Controls;
+using CadApp = Autodesk.AutoCAD.ApplicationServices.Application;
 
 namespace Kys_cad_plugin.Views
 {

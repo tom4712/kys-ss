@@ -2,11 +2,9 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
-using System;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Controls;
 using Wpf.Ui.Controls;
 using CadApp = Autodesk.AutoCAD.ApplicationServices.Application;
 

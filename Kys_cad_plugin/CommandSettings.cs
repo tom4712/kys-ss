@@ -1,5 +1,4 @@
 ﻿using Microsoft.Win32;
-using System;
 
 namespace Kys_cad_plugin.Core
 {

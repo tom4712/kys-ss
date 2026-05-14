@@ -1,12 +1,8 @@
-﻿using System;
-using System.Linq;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace Kys_cad_plugin.Core
 {

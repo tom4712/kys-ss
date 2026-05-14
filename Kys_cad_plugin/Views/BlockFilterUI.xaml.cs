@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using Microsoft.Win32;
-using Wpf.Ui.Controls;
-
-// 오토캐드 API 참조
+﻿// 오토캐드 API 참조
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
+using Microsoft.Win32;
+using System.IO;
+using System.Text;
+using System.Windows;
+using Wpf.Ui.Controls;
 using CadApp = Autodesk.AutoCAD.ApplicationServices.Application;
 
 namespace Kys_cad_plugin.Views

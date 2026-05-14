@@ -1,0 +1,20 @@
+﻿<?xml version='1.0'?>
+<Obfuscator>
+	<Var name="InPath" value="." />
+	<Var name="OutPath" value=".\Obfuscated" />
+
+	<Var name="IgnoreMissingAssemblies" value="true" />
+	<Var name="IgnoreUninstallable" value="true" />
+
+	<Var name="AssemblySearchPath" value="C:\Program Files\Autodesk\AutoCAD 2026" />
+	<Var name="AssemblySearchPath" value="C:\Program Files\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.0" />
+
+	<Var name="KeepPublicApi" value="true" />
+	<Var name="HidePrivateApi" value="true" />
+	<Var name="RenameProperties" value="true" />
+	<Var name="EncryptStrings" value="true" />
+
+	<SkipAttributes type="Autodesk.AutoCAD.Runtime.CommandMethodAttribute" />
+
+	<Module file="Kys_cad_plugin.dll" />
+</Obfuscator>

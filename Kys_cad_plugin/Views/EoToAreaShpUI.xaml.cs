@@ -1,18 +1,12 @@
-﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using Wpf.Ui.Controls;
-
+﻿using Kys_cad_plugin.Core; // ★ 중앙 데이터 매니저 참조
+using Microsoft.Win32;
+using NetTopologySuite.Features;
 // GIS 라이브러리
 using NetTopologySuite.Geometries;
-using NetTopologySuite.Features;
 using NetTopologySuite.IO;
+using System.Collections.ObjectModel;
+using System.Windows;
+using Wpf.Ui.Controls;
 
 namespace Kys_cad_plugin.Views
 {
@@ -22,6 +16,8 @@ namespace Kys_cad_plugin.Views
         public double X { get; set; }
         public double Y { get; set; }
         public double Z { get; set; }
+        public double Omega { get; set; } // ★ 추가
+        public double Phi { get; set; }   // ★ 추가
         public double Kappa { get; set; }
     }
 
@@ -71,13 +67,12 @@ namespace Kys_cad_plugin.Views
             TxtWidth.IsReadOnly = TxtHeight.IsReadOnly = TxtFocal.IsReadOnly = TxtPixelSize.IsReadOnly = ro;
         }
 
+        // [수정] 7개 모든 컬럼 매핑 연동
         private async void BtnLoadEo_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog { Filter = "텍스트 파일 (*.txt;*.csv)|*.txt;*.csv" };
-            if (ofd.ShowDialog() != true) return;
-
             try
             {
+                // 센서 제원 유효성 확인
                 if (!double.TryParse(TxtFocal.Text, out double focal) || !double.TryParse(TxtPixelSize.Text, out double pxSizeMicron))
                 {
                     await ShowModernDialog("입력 오류", "초점거리와 픽셀크기 값을 확인해주세요.");
@@ -90,50 +85,75 @@ namespace Kys_cad_plugin.Views
                     return;
                 }
 
+                // ★ 1. 7개 모든 컬럼 필드 정의
+                var targetFields = new List<string> { "ID", "X", "Y", "Z", "Omega", "Phi", "Kappa" };
+
+                // 2. 중앙 매니저 호출 (파일 로드 및 매핑 팝업)
+                var result = await DataImportManager.ImportAndMap(this, targetFields);
+
+                if (result == null || result.Rows.Count == 0) return;
+
+                // 3. UI 초기화 및 설정
                 double pxSizeM = pxSizeMicron / 1000000.0;
+                _eoList.Clear();
+                _footprintList.Clear();
+                PrgStatus.Value = 0;
+                TxtStatus.Text = "데이터 분석 중...";
 
-                _eoList.Clear(); _footprintList.Clear();
-                string[] lines = File.ReadAllLines(ofd.FileName, Encoding.Default);
+                int totalRows = result.Rows.Count;
 
-                await Task.Run(() => {
+                // 4. 영역 계산 비동기 처리
+                await Task.Run(() =>
+                {
                     int idx = 0;
-                    foreach (string line in lines)
+                    foreach (var row in result.Rows)
                     {
-                        string[] p = line.Split(new char[] { '\t', ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
-                        if (p.Length >= 7)
+                        try
                         {
-                            try
+                            var eo = new EoAreaRecord
                             {
-                                var eo = new EoAreaRecord { Id = p[0], X = double.Parse(p[1]), Y = double.Parse(p[2]), Z = double.Parse(p[3]), Kappa = double.Parse(p[6]) };
+                                Id = row["ID"],
+                                X = double.Parse(row["X"]),
+                                Y = double.Parse(row["Y"]),
+                                Z = double.Parse(row["Z"]),
+                                Omega = double.Parse(row["Omega"]), // 파싱 추가
+                                Phi = double.Parse(row["Phi"]),     // 파싱 추가
+                                Kappa = double.Parse(row["Kappa"])
+                            };
 
-                                double gsd = (eo.Z / focal) * pxSizeM;
-                                double kRad = eo.Kappa * (Math.PI / 180.0);
-                                double hW = (wPx * gsd) / 2.0;
-                                double hH = (hPx * gsd) / 2.0;
+                            // GSD 및 영역 계산 로직
+                            double gsd = (eo.Z / focal) * pxSizeM;
+                            double kRad = eo.Kappa * (Math.PI / 180.0);
+                            double hW = (wPx * gsd) / 2.0;
+                            double hH = (hPx * gsd) / 2.0;
 
-                                Coordinate tl = Rotate(eo.X, eo.Y, -hW, hH, kRad);
-                                Coordinate tr = Rotate(eo.X, eo.Y, hW, hH, kRad);
-                                Coordinate br = Rotate(eo.X, eo.Y, hW, -hH, kRad);
-                                Coordinate bl = Rotate(eo.X, eo.Y, -hW, -hH, kRad);
+                            Coordinate tl = Rotate(eo.X, eo.Y, -hW, hH, kRad);
+                            Coordinate tr = Rotate(eo.X, eo.Y, hW, hH, kRad);
+                            Coordinate br = Rotate(eo.X, eo.Y, hW, -hH, kRad);
+                            Coordinate bl = Rotate(eo.X, eo.Y, -hW, -hH, kRad);
 
-                                Dispatcher.Invoke(() => {
-                                    _eoList.Add(eo);
-                                    _footprintList.Add(new FootprintRecord
-                                    {
-                                        Id = eo.Id,
-                                        TL = $"{tl.X:F2}, {tl.Y:F2}",
-                                        TR = $"{tr.X:F2}, {tr.Y:F2}",
-                                        BL = $"{bl.X:F2}, {bl.Y:F2}",
-                                        BR = $"{br.X:F2}, {br.Y:F2}",
-                                        Coords = new[] { tl, tr, br, bl, tl }
-                                    });
-                                    idx++;
-                                    PrgStatus.Value = (double)idx / lines.Length * 100;
-                                    TxtStatus.Text = $"{idx} / {lines.Length} 처리 중...";
+                            Dispatcher.Invoke(() =>
+                            {
+                                _eoList.Add(eo);
+                                _footprintList.Add(new FootprintRecord
+                                {
+                                    Id = eo.Id,
+                                    TL = $"{tl.X:F2}, {tl.Y:F2}",
+                                    TR = $"{tr.X:F2}, {tr.Y:F2}",
+                                    BL = $"{bl.X:F2}, {bl.Y:F2}",
+                                    BR = $"{br.X:F2}, {br.Y:F2}",
+                                    Coords = new[] { tl, tr, br, bl, tl }
                                 });
-                            }
-                            catch { /* 파싱 에러 라인 스킵 */ }
+                                idx++;
+
+                                if (idx % 20 == 0 || idx == totalRows)
+                                {
+                                    PrgStatus.Value = (double)idx / totalRows * 100;
+                                    TxtStatus.Text = $"{idx} / {totalRows} 처리 중...";
+                                }
+                            });
                         }
+                        catch { idx++; }
                     }
                 });
 
@@ -141,7 +161,7 @@ namespace Kys_cad_plugin.Views
             }
             catch (Exception ex)
             {
-                await ShowModernDialog("오류", $"파일 로드 중 오류 발생: {ex.Message}");
+                await ShowModernDialog("오류", $"파일 처리 중 오류 발생: {ex.Message}");
             }
         }
 
@@ -156,7 +176,7 @@ namespace Kys_cad_plugin.Views
         {
             if (_footprintList.Count == 0)
             {
-                await ShowModernDialog("알림", "저장할 데이터가 없습니다. 먼저 EO 파일을 불러오세요.");
+                await ShowModernDialog("알림", "저장할 데이터가 없습니다.");
                 return;
             }
 
@@ -173,23 +193,24 @@ namespace Kys_cad_plugin.Views
                     var poly = factory.CreatePolygon(foot.Coords);
                     var attr = new AttributesTable();
                     attr.Add("ID", foot.Id);
-                    attr.Add("TL", foot.TL); attr.Add("TR", foot.TR);
-                    attr.Add("BL", foot.BL); attr.Add("BR", foot.BR);
+                    attr.Add("TL", foot.TL);
+                    attr.Add("TR", foot.TR);
+                    attr.Add("BL", foot.BL);
+                    attr.Add("BR", foot.BR);
                     features.Add(new Feature(poly, attr));
                 }
 
                 var writer = new ShapefileDataWriter(sfd.FileName) { Header = ShapefileDataWriter.GetHeader(features[0], features.Count) };
                 writer.Write(features);
 
-                await ShowModernDialog("성공", $"SHP 파일이 성공적으로 생성되었습니다.\n경로: {sfd.FileName}");
+                await ShowModernDialog("성공", $"SHP 파일이 생성되었습니다.\n경로: {sfd.FileName}");
             }
             catch (Exception ex)
             {
-                await ShowModernDialog("저장 오류", $"SHP 생성 중 오류 발생: {ex.Message}");
+                await ShowModernDialog("저장 오류", ex.Message);
             }
         }
 
-        // 공통 다이얼로그 메서드
         private async System.Threading.Tasks.Task ShowModernDialog(string title, string content)
         {
             var m = new Wpf.Ui.Controls.MessageBox

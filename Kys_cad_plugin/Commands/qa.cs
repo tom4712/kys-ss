@@ -21,7 +21,7 @@ namespace Kys_cad_plugin.Commands
                 doc.SendStringToExecute("(if c:qa (c:qa)) ", true, false, false);
                 return;
             }
-            
+
             if (doc == null) return;
 
             Database db = doc.Database;

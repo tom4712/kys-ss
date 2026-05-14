@@ -1,27 +1,170 @@
 ﻿using Kys_cad_plugin.Core;
 using MahApps.Metro.IconPacks; // 6.2.1.0 버전용
-using Microsoft.Win32;
-using System;
 using System.IO;
-using System.Linq;
+using System.Net.Http;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Wpf.Ui.Appearance;
 using Wpf.Ui.Controls;
-using CadApp = Autodesk.AutoCAD.ApplicationServices.Application;
 
 namespace Kys_cad_plugin.Views
 {
 
-   
+
 
     public partial class MainPaletteControl : UserControl
     {
         private bool _isLicensed = false;
         // [핵심 1] 단 하나의 "현재 활성화된 창"만 기억합니다.
         private static Window _currentActiveWindow = null;
+
+
+        private const string VersionCsvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2mnccfwMdM7PqsV4Om_-kyCBNl-EqIwzGczYkV7fmWZmtRl0nqfR-FGz5PwkWpZliuHqVezNlFpTV/pub?gid=0&single=true&output=csv";
+
+        private async void VersionUpdate_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Version currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+                string currentVerStr = $"{currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}";
+
+                string latestVerStr = await GetLatestVersionFromSheet();
+
+                if (latestVerStr == "ERROR")
+                {
+                    await ShowSimpleDialog("연결 오류", "서버 연결에 실패했습니다.");
+                    return;
+                }
+
+                Version latestVersion = new Version(latestVerStr);
+                bool isUpdateNeeded = latestVersion > currentVersion;
+
+                // 1. 다이얼로그 생성 (공통 설정만)
+                var dialog = new Wpf.Ui.Controls.ContentDialog(DialogHost)
+                {
+                    Title = "시스템 버전 정보",
+                    Content = null, // 아래에서 생성한 stack을 대입할 예정
+                    PrimaryButtonText = isUpdateNeeded ? "업데이트 문의" : "확인",
+                    // ★ 파란색 배경 강제 적용 (가시성 확보)
+                    PrimaryButtonAppearance = ControlAppearance.Info,
+                    DefaultButton = ContentDialogButton.Primary
+                };
+
+                // 2. ★ 핵심: 업데이트가 필요할 때만 CloseButtonText를 할당
+                // 필요 없을 때는 아예 대입조차 안 해야 저 유령 버튼이 안 생깁니다.
+                if (isUpdateNeeded)
+                {
+                    dialog.CloseButtonText = "나중에";
+                }
+
+                // 3. 내부 콘텐츠 (UI 가독성 향상)
+                var stack = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
+                stack.Children.Add(new Wpf.Ui.Controls.TextBlock
+                {
+                    Text = isUpdateNeeded ? "⚠ 새로운 버전 업데이트가 필요합니다." : "✅ 최신 버전을 사용 중입니다.",
+                    FontWeight = FontWeights.Bold,
+                    FontSize = 15,
+                    Foreground = isUpdateNeeded ? new SolidColorBrush(Color.FromRgb(255, 180, 0)) : new SolidColorBrush(Color.FromRgb(46, 204, 113)),
+                    Margin = new Thickness(0, 0, 0, 18)
+                });
+
+                stack.Children.Add(new Wpf.Ui.Controls.TextBlock { Text = $"현재 버전: v{currentVerStr}", Margin = new Thickness(0, 0, 0, 5), FontSize = 13 });
+                stack.Children.Add(new Wpf.Ui.Controls.TextBlock { Text = $"최신 버전: v{latestVerStr}", FontWeight = FontWeights.Bold, FontSize = 13 });
+
+                dialog.Content = stack;
+
+                // 4. 실행
+                var result = await dialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary && isUpdateNeeded)
+                {
+                    await ShowAdminContactDialog();
+                }
+            }
+            catch (Exception ex)
+            {
+                await ShowSimpleDialog("오류", ex.Message);
+            }
+        }
+
+        // --- 헬퍼 함수들 (ControlAppearance.Primary 적용) ---
+
+        private async Task ShowAdminContactDialog()
+        {
+            var adminDialog = new Wpf.Ui.Controls.ContentDialog(DialogHost)
+            {
+                Title = "업데이트 문의",
+                PrimaryButtonText = "확인",
+                PrimaryButtonAppearance = ControlAppearance.Info, // 버튼 강조
+                Content = new Wpf.Ui.Controls.TextBlock
+                {
+                    Text = "최신 버전 설치 및 업데이트는\n관리자에게 문의하시기 바랍니다.\n\n[메일 : tom4712@kakao.com]\n[카톡 : zszszszszs]",
+                    TextWrapping = TextWrapping.Wrap,
+                    Margin = new Thickness(0, 10, 0, 0)
+                }
+            };
+            await adminDialog.ShowAsync();
+        }
+
+        private async Task ShowSimpleDialog(string title, string content)
+        {
+            var simpleDialog = new Wpf.Ui.Controls.ContentDialog(DialogHost)
+            {
+                Title = title,
+                PrimaryButtonText = "확인",
+                PrimaryButtonAppearance = ControlAppearance.Primary, // 버튼 강조
+                Content = new Wpf.Ui.Controls.TextBlock { Text = content, TextWrapping = TextWrapping.Wrap }
+            };
+            await simpleDialog.ShowAsync();
+        }
+
+        private async Task<string> GetLatestVersionFromSheet()
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    // 1. 캐시 방지를 위해 현재 시간을 나노초 단위로 주소 뒤에 붙임
+                    // 결과 예시: ...output=csv&t=63851234567890
+                    string cacheBuster = DateTime.Now.Ticks.ToString();
+                    string finalUrl = $"{VersionCsvUrl}&t={cacheBuster}";
+
+                    client.Timeout = TimeSpan.FromSeconds(3);
+
+                    // 2. 헤더에 캐시 쓰지 말라고 명시적으로 선언 (2중 안전장치)
+                    client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue
+                    {
+                        NoCache = true
+                    };
+
+                    string csvContent = await client.GetStringAsync(finalUrl);
+
+                    if (!string.IsNullOrWhiteSpace(csvContent))
+                    {
+                        // 첫 줄 첫 칸 데이터 추출
+                        string version = csvContent.Split('\n')[0].Split(',')[0].Trim();
+                        return version;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // 로그나 디버그 창에서 에러 확인용 (필요시)
+                System.Diagnostics.Debug.WriteLine($"Version Fetch Error: {ex.Message}");
+            }
+            return "ERROR";
+        }
+
+
+
+
+
+
+
+
+
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {

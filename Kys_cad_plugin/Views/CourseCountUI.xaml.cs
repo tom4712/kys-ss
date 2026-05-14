@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// 오토캐드 API
+using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
+using Autodesk.AutoCAD.Geometry;
 using System.Collections.ObjectModel;
-using System.Linq;
+using System.Diagnostics; // 프로세스(메모장) 실행을 위해 추가
+using System.IO;          // 파일 처리를 위해 추가
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Wpf.Ui.Controls;
-
-// 오토캐드 API
-using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.DatabaseServices;
-using Autodesk.AutoCAD.Geometry;
-using Autodesk.AutoCAD.EditorInput;
 using CadApp = Autodesk.AutoCAD.ApplicationServices.Application;
 
 namespace Kys_cad_plugin.Views
@@ -282,24 +279,50 @@ namespace Kys_cad_plugin.Views
             }
         }
 
+        // 메서드명은 유지하되, 클립보드 대신 Txt 파일 생성 및 실행으로 변경
         private async void BtnCopyToExcel_Click(object sender, RoutedEventArgs e)
         {
             if (_resultList.Count == 0)
             {
-                await ShowModernDialog("알림", "복사할 결과가 없습니다. 먼저 분석을 실행해주세요.");
+                await ShowModernDialog("알림", "출력할 결과가 없습니다. 먼저 분석을 실행해주세요.");
                 return;
             }
 
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("코스(Course)\t본촬영\t재촬영\t전체매수");
-
-            foreach (var data in _resultList)
+            try
             {
-                sb.AppendLine($"{data.Course}\t{data.MainCount}\t{data.ReshootCount}\t{data.TotalCount}");
-            }
+                // 1. 임시 파일 경로 설정 (시스템의 Temp 폴더 사용)
+                string tempFolder = Path.GetTempPath();
+                string fileName = $"CourseAnalysis_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+                string filePath = Path.Combine(tempFolder, fileName);
 
-            Clipboard.SetText(sb.ToString());
-            await ShowModernDialog("복사 완료", "데이터가 클립보드에 복사되었습니다.\n엑셀(Excel)의 원하는 셀을 선택하고 붙여넣기(Ctrl+V) 하세요.");
+                // 2. 데이터 구성 (StringBuilder 사용)
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("코스(Course)\t본촬영\t재촬영\t전체매수");
+
+                foreach (var data in _resultList)
+                {
+                    sb.AppendLine($"{data.Course}\t{data.MainCount}\t{data.ReshootCount}\t{data.TotalCount}");
+                }
+
+                // 3. 파일 쓰기 (UTF8 인코딩으로 저장하여 한글 깨짐 방지)
+                File.WriteAllText(filePath, sb.ToString(), Encoding.UTF8);
+
+                // 4. 파일 실행 (시스템 기본 텍스트 편집기인 메모장 등으로 열기)
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = filePath,
+                    UseShellExecute = true // 운영체제 쉘을 사용하여 기본 프로그램 실행
+                };
+                Process.Start(psi);
+            }
+            catch (IOException ioEx)
+            {
+                await ShowModernDialog("파일 오류", $"파일을 생성하거나 쓰는 중 오류가 발생했습니다: {ioEx.Message}");
+            }
+            catch (Exception ex)
+            {
+                await ShowModernDialog("오류", $"작업 중 예외가 발생했습니다: {ex.Message}");
+            }
         }
 
         private async System.Threading.Tasks.Task ShowModernDialog(string title, string content)

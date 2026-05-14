@@ -1,12 +1,7 @@
-﻿using Autodesk.AutoCAD.DatabaseServices;
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
+﻿using Kys_cad_plugin.Core; // ★ 중앙 데이터 매니저 참조 추가
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using Wpf.Ui.Controls;
 
@@ -70,100 +65,100 @@ namespace Kys_cad_plugin.Views
             TxtWidth.IsReadOnly = TxtHeight.IsReadOnly = TxtFocal.IsReadOnly = TxtPixelSize.IsReadOnly = isReadOnly;
         }
 
-        // EO 로드 및 비동기 계산 (ProgressBar 적용)
+        // [수정된 로직] 중앙 임포트 매니저 연동 및 비동기 계산
         private async void BtnLoadEo_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog { Filter = "텍스트 파일 (*.txt;*.csv)|*.txt;*.csv" };
-            if (openFileDialog.ShowDialog() != true) return;
-
             try
             {
+                // 센서 제원 유효성 먼저 확인
                 if (!double.TryParse(TxtFocal.Text, out double focal) || !double.TryParse(TxtPixelSize.Text, out double pxSize) ||
                     !int.TryParse(TxtWidth.Text, out int wPx) || !int.TryParse(TxtHeight.Text, out int hPx))
                 {
-                    await ShowModernDialog("오류", "센서 제원을 확인해주세요.");
+                    await ShowModernDialog("오류", "센서 제원을 먼저 확인해주세요.");
                     return;
                 }
 
-                _eoList.Clear(); _calcList.Clear();
-                PrgStatus.Value = 0; TxtProgress.Text = "0%";
+                // 1. 필요한 7개 필드 정의
+                var targetFields = new List<string> { "ID", "X", "Y", "Z", "Omega", "Phi", "Kappa" };
+
+                // 2. 중앙 매니저 호출 (파일 로드 및 매핑 창)
+                var result = await DataImportManager.ImportAndMap(this, targetFields);
+
+                if (result == null || result.Rows.Count == 0) return;
+
+                // 3. UI 초기화
+                _eoList.Clear();
+                _calcList.Clear();
+                PrgStatus.Value = 0;
+                TxtProgress.Text = "0%";
 
                 double pxSizeM = pxSize / 1000000.0;
                 bool ignoreK = ChkIgnoreKappa.IsChecked == true;
+                int totalRows = result.Rows.Count;
 
-                // 1. 파일 전체 라인 먼저 읽기
-                string[] allLines = File.ReadAllLines(openFileDialog.FileName, Encoding.Default);
-                int totalRows = allLines.Length;
-
-                // 2. 비동기 처리 시작
+                // 4. 수집된 데이터를 바탕으로 GSD 및 좌상단 좌표 계산 (비동기 처리)
                 await Task.Run(() =>
                 {
                     int processed = 0;
-                    foreach (string line in allLines)
+                    foreach (var row in result.Rows)
                     {
-                        if (string.IsNullOrWhiteSpace(line)) { processed++; continue; }
-                        string[] p = line.Split(new char[] { '\t', ' ', ',' }, StringSplitOptions.RemoveEmptyEntries);
-
-                        if (p.Length >= 7)
+                        try
                         {
-                            try
+                            var eo = new EoRecord
                             {
-                                var eo = new EoRecord
+                                Id = row["ID"],
+                                X = double.Parse(row["X"]),
+                                Y = double.Parse(row["Y"]),
+                                Z = double.Parse(row["Z"]),
+                                Omega = double.Parse(row["Omega"]),
+                                Phi = double.Parse(row["Phi"]),
+                                Kappa = double.Parse(row["Kappa"])
+                            };
+
+                            // 계산 로직 실행
+                            double targetKappa = ignoreK ? 0 : eo.Kappa;
+                            double kRad = targetKappa * (Math.PI / 180.0);
+                            double gsd = (eo.Z / focal) * pxSizeM;
+
+                            // 회전 행렬 적용 좌상단 계산
+                            double halfW = (wPx - 1) * gsd / 2.0;
+                            double halfH = (hPx - 1) * gsd / 2.0;
+                            double offX = (-halfW * Math.Cos(kRad)) - (halfH * Math.Sin(kRad));
+                            double offY = (-halfW * Math.Sin(kRad)) + (halfH * Math.Cos(kRad));
+
+                            // UI 스레드에 결과 추가 및 프로그레스 업데이트
+                            Dispatcher.Invoke(() =>
+                            {
+                                _eoList.Add(eo);
+                                _calcList.Add(new CalculatedTfwRecord
                                 {
-                                    Id = p[0],
-                                    X = double.Parse(p[1]),
-                                    Y = double.Parse(p[2]),
-                                    Z = double.Parse(p[3]),
-                                    Omega = double.Parse(p[4]),
-                                    Phi = double.Parse(p[5]),
-                                    Kappa = double.Parse(p[6])
-                                };
-
-                                // 옵션 체크 시 Kappa를 0으로 강제 처리
-                                double targetKappa = ignoreK ? 0 : eo.Kappa;
-                                double kRad = targetKappa * (Math.PI / 180.0);
-                                double gsd = (eo.Z / focal) * pxSizeM;
-
-                                // 회전 행렬 적용 좌상단 계산
-                                double halfW = (wPx - 1) * gsd / 2.0;
-                                double halfH = (hPx - 1) * gsd / 2.0;
-                                double offX = (-halfW * Math.Cos(kRad)) - (halfH * Math.Sin(kRad));
-                                double offY = (-halfW * Math.Sin(kRad)) + (halfH * Math.Cos(kRad));
-
-                                // UI 스레드에 데이터 추가 및 프로그레스 업데이트
-                                Dispatcher.Invoke(() => {
-                                    _eoList.Add(eo);
-                                    _calcList.Add(new CalculatedTfwRecord
-                                    {
-                                        Id = eo.Id,
-                                        Gsd = gsd,
-                                        AppliedKappa = targetKappa,
-                                        TopLeftX = eo.X + offX,
-                                        TopLeftY = eo.Y + offY
-                                    });
-
-                                    processed++;
-                                    if (processed % 50 == 0 || processed == totalRows)
-                                    {
-                                        double pct = (double)processed / totalRows * 100;
-                                        PrgStatus.Value = pct;
-                                        TxtProgress.Text = $"{(int)pct}%";
-                                        TxtCountStatus.Text = $"{processed} / {totalRows}";
-                                    }
+                                    Id = eo.Id,
+                                    Gsd = gsd,
+                                    AppliedKappa = targetKappa,
+                                    TopLeftX = eo.X + offX,
+                                    TopLeftY = eo.Y + offY
                                 });
-                            }
-                            catch { processed++; }
+
+                                processed++;
+                                if (processed % 20 == 0 || processed == totalRows)
+                                {
+                                    double pct = (double)processed / totalRows * 100;
+                                    PrgStatus.Value = pct;
+                                    TxtProgress.Text = $"{(int)pct}%";
+                                    TxtCountStatus.Text = $"{processed} / {totalRows}";
+                                }
+                            });
                         }
-                        else { processed++; }
+                        catch { processed++; }
                     }
                 });
 
-                await ShowModernDialog("완료", $"{_calcList.Count}건의 데이터 계산이 완료되었습니다.");
+                await ShowModernDialog("완료", $"{_calcList.Count}건의 데이터 변환 및 계산이 완료되었습니다.");
             }
             catch (Exception ex) { await ShowModernDialog("오류", ex.Message); }
         }
 
-        // TFW 저장
+        // TFW 저장 (기존 로직 유지)
         private async void BtnSaveTfw_Click(object sender, RoutedEventArgs e)
         {
             if (_calcList.Count == 0) return;

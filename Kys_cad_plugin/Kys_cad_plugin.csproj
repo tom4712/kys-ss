@@ -6,10 +6,24 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<Version>4.6.4</Version>
+		<PackageId>Kysql_Plugin</PackageId>
+		<Authors>KIM YONG SU</Authors>
+		<Company>tom4712@kakao.com</Company>
+		<Product>Kysql_Plugin</Product>
+		<Description>오토캐드 플러그인</Description>
+		<Copyright>Copyright © 2026 tom4712@kakao.com. All rights reserved.</Copyright>
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="Obfuscar.xml" />
 	  <None Remove="Resources\MenuConfig.txt" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Obfuscar.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -24,6 +38,10 @@
 	  </PackageReference>
 	  <PackageReference Include="NetTopologySuite" Version="2.6.0" />
 	  <PackageReference Include="NetTopologySuite.IO.ShapeFile" Version="2.1.0" />
+	  <PackageReference Include="Obfuscar" Version="2.2.50">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
 	  <PackageReference Include="ProjNET4GeoAPI" Version="1.4.1" />
 	  <PackageReference Include="WPF-UI" Version="4.2.1">
 	    <GeneratePathProperty>True</GeneratePathProperty>
@@ -48,5 +66,15 @@
 			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
+		<Copy SourceFiles="C:\Program Files\Autodesk\AutoCAD 2026\Acdbmgd.dll;C:\Program Files\Autodesk\AutoCAD 2026\AcMgd.dll;C:\Program Files\Autodesk\AutoCAD 2026\AcCoreMgd.dll"
+			  DestinationFolder="$(TargetDir)"
+			  SkipUnchangedFiles="true" />
+
+		<Exec Command="cd &quot;$(TargetDir)&quot; &amp;&amp; &quot;$(PkgObfuscar)\tools\Obfuscar.Console.exe&quot; &quot;$(ProjectDir)Obfuscar.xml&quot;" />
+
+		<Delete Files="$(TargetDir)Acdbmgd.dll;$(TargetDir)AcMgd.dll;$(TargetDir)AcCoreMgd.dll" />
+	</Target>
 
 </Project>

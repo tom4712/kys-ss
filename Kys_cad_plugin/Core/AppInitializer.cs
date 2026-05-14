@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.Runtime;
+using Kys_cad_plugin.Core;
 using System.IO;
 using System.Reflection;
-using System.Runtime.Loader; 
-using Autodesk.AutoCAD.Runtime;
-using Autodesk.AutoCAD.ApplicationServices;
-using Kys_cad_plugin.Core;
+using System.Runtime.Loader;
 
 [assembly: ExtensionApplication(typeof(Kys_cad_plugin.AppInitializer))]
 
