@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-		<Version>4.6.4</Version>
+		<Version>4.7.3</Version>
 		<PackageId>Kysql_Plugin</PackageId>
 		<Authors>KIM YONG SU</Authors>
 		<Company>tom4712@kakao.com</Company>
@@ -30,6 +30,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="DotSpatial.Projections" Version="4.0.656" />
 		<PackageReference Include="GeoAPI" Version="1.7.5" />
 		<PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
 		<PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022">
@@ -67,9 +68,7 @@
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
-		<Copy SourceFiles="C:\Program Files\Autodesk\AutoCAD 2026\Acdbmgd.dll;C:\Program Files\Autodesk\AutoCAD 2026\AcMgd.dll;C:\Program Files\Autodesk\AutoCAD 2026\AcCoreMgd.dll"
-			  DestinationFolder="$(TargetDir)"
-			  SkipUnchangedFiles="true" />
+		<Copy SourceFiles="C:\Program Files\Autodesk\AutoCAD 2026\Acdbmgd.dll;C:\Program Files\Autodesk\AutoCAD 2026\AcMgd.dll;C:\Program Files\Autodesk\AutoCAD 2026\AcCoreMgd.dll" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
 		<Exec Command="cd &quot;$(TargetDir)&quot; &amp;&amp; &quot;$(PkgObfuscar)\tools\Obfuscar.Console.exe&quot; &quot;$(ProjectDir)Obfuscar.xml&quot;" />
 		<Delete Files="$(TargetDir)Acdbmgd.dll;$(TargetDir)AcMgd.dll;$(TargetDir)AcCoreMgd.dll" />
 	</Target>

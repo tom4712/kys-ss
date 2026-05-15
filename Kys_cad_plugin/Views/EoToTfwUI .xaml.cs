@@ -4,7 +4,6 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using Wpf.Ui.Controls;
-using Kys_cad_plugin.Core; // ★ 중앙 데이터 매니저 참조 추가
 
 namespace Kys_cad_plugin.Views
 {
@@ -128,12 +127,9 @@ namespace Kys_cad_plugin.Views
                             double offY = (-halfW * Math.Sin(kRad)) + (halfH * Math.Cos(kRad));
 
                             // UI 스레드에 결과 추가 및 프로그레스 업데이트
-<<<<<<< HEAD
+
                             Dispatcher.Invoke(() =>
                             {
-=======
-                            Dispatcher.Invoke(() => {
->>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
                                 _eoList.Add(eo);
                                 _calcList.Add(new CalculatedTfwRecord
                                 {

@@ -1,10 +1,7 @@
 ﻿using Kys_cad_plugin.Core;
 using MahApps.Metro.IconPacks; // 6.2.1.0 버전용
 using System.IO;
-<<<<<<< HEAD
-=======
-using System.Linq;
->>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
+
 using System.Net.Http;
 using System.Reflection;
 using System.Windows;
@@ -649,6 +646,10 @@ namespace Kys_cad_plugin.Views
                 Title = "라이선스 정품 인증",
                 Content = contentPanel,
                 PrimaryButtonText = "인증하기",
+
+                // 💡 Primary 대신 Info, Success, Danger 등을 사용할 수 있습니다.
+                PrimaryButtonAppearance = ControlAppearance.Info,
+
                 CloseButtonText = "취소",
                 DefaultButton = ContentDialogButton.Primary
             };

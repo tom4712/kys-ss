@@ -1,0 +1,146 @@
+﻿<ui:FluentWindow x:Class="Kys_cad_plugin.Views.ImageInputUI"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+                 xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+                 Width="1050" Height="800"
+                 WindowStartupLocation="CenterScreen"
+                 ExtendsContentIntoTitleBar="True"
+                 WindowBackdropType="Mica"
+                 Title="좌표 이미지 입력"
+                 Background="{DynamicResource ApplicationBackgroundBrush}" 
+                 Foreground="{DynamicResource TextFillColorPrimaryBrush}">
+
+    <ui:FluentWindow.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemesDictionary Theme="Dark" />
+                <ui:ControlsDictionary />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <ui:TitleBar Grid.Row="0" Title="좌표 이미지 입력 (Map 3D 방식)" Icon="ImageMap24" />
+
+        <Grid Grid.Row="1" Margin="20,10,20,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="420"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                <TextBlock Text="이미지 데이터 가져오기" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                <TextBlock Text="1. 파일 선택 (TIF, JPG, IMG)" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5"/>
+                <Grid Margin="0,0,0,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <ui:TextBox x:Name="TxtFilePath" IsReadOnly="True" PlaceholderText="이미지 파일을 선택하세요..." />
+                    <ui:Button Grid.Column="1" Margin="10,0,0,0" Click="BtnBrowse_Click" Appearance="Secondary">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconFontAwesome Kind="FolderOpenSolid" Width="14" Margin="0,0,6,0"/>
+                            <TextBlock Text="찾아보기"/>
+                        </StackPanel>
+                    </ui:Button>
+                </Grid>
+
+                <TextBlock Text="2. 삽입 설정 (Image Correlation)" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5"/>
+                <ui:Card Margin="0,0,0,15" Padding="15">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                <TextBlock Text="도면층 (Layer)" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,0,5"/>
+                                <ComboBox x:Name="CmbLayers" Height="32"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="좌표 출처" FontSize="12" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,0,0,5"/>
+                                <TextBlock x:Name="TxtSourceType" Text="없음" Foreground="#FF9800" FontWeight="Bold" Margin="5,5,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <ui:TextBox x:Name="TxtInsertX" Grid.Row="0" Grid.Column="0" Margin="0,5,10,10" ui:TextBox.PlaceholderText="X 좌표"/>
+                            <ui:TextBox x:Name="TxtInsertY" Grid.Row="1" Grid.Column="0" Margin="0,5,10,10" ui:TextBox.PlaceholderText="Y 좌표"/>
+                            <ui:TextBox x:Name="TxtInsertZ" Grid.Row="2" Grid.Column="0" Margin="0,5,10,5" ui:TextBox.PlaceholderText="Z 좌표"/>
+                            <ui:TextBox x:Name="TxtScale" Grid.Row="0" Grid.Column="1" Margin="0,5,0,10" ui:TextBox.PlaceholderText="축척"/>
+                            <ui:TextBox x:Name="TxtRotation" Grid.Row="1" Grid.Column="1" Margin="0,5,0,10" ui:TextBox.PlaceholderText="회전"/>
+                        </Grid>
+                    </StackPanel>
+                </ui:Card>
+
+                <TextBlock Text="3. 좌표계 변환 설정" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="0,0,0,5"/>
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <ComboBox x:Name="CmbSourceCRS" Grid.Column="0" Margin="0,0,10,0" Height="32"/>
+                    <ComboBox x:Name="CmbTargetCRS" Grid.Column="1" Height="32"/>
+                </Grid>
+
+                <ui:Button HorizontalAlignment="Stretch" Appearance="info" Click="BtnInsert_Click" Padding="0,12">
+                    <StackPanel Orientation="Horizontal">
+                        <iconPacks:PackIconFontAwesome Kind="FileImportSolid" Width="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="AutoCAD 도면에 삽입" FontWeight="Bold" FontSize="14"/>
+                    </StackPanel>
+                </ui:Button>
+            </StackPanel>
+
+            <Border Grid.Column="1" CornerRadius="8" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="1">
+                <Grid>
+                    <Grid.Background>
+                        <DrawingBrush TileMode="Tile" Viewport="0,0,40,40" ViewportUnits="Absolute">
+                            <DrawingBrush.Drawing>
+                                <GeometryDrawing>
+                                    <GeometryDrawing.Geometry>
+                                        <GeometryGroup>
+                                            <LineGeometry StartPoint="0,0" EndPoint="40,0" />
+                                            <LineGeometry StartPoint="0,0" EndPoint="0,40" />
+                                        </GeometryGroup>
+                                    </GeometryDrawing.Geometry>
+                                    <GeometryDrawing.Pen>
+                                        <Pen Thickness="1" Brush="{DynamicResource ControlStrokeColorDefaultBrush}" />
+                                    </GeometryDrawing.Pen>
+                                </GeometryDrawing>
+                            </DrawingBrush.Drawing>
+                        </DrawingBrush>
+                    </Grid.Background>
+                    <Viewbox Stretch="Uniform" Margin="20">
+                        <Grid x:Name="PreviewGrid">
+                            <Image x:Name="ImgPreview" Opacity="0.85"/>
+                            <Canvas x:Name="CadCanvas" IsHitTestVisible="False"/>
+                        </Grid>
+                    </Viewbox>
+                    <ui:Button HorizontalAlignment="Right" VerticalAlignment="Top" Margin="15" Appearance="Secondary" Click="BtnRefreshPreview_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <iconPacks:PackIconFontAwesome Kind="SymfonyBrands" Width="12" Margin="0,0,6,0"/>
+                            <TextBlock Text="CAD 도면 겹쳐보기"/>
+                        </StackPanel>
+                    </ui:Button>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <ContentPresenter x:Name="RootDialogHost" Grid.Row="0" Grid.RowSpan="2" Panel.ZIndex="100"/>
+    </Grid>
+</ui:FluentWindow>

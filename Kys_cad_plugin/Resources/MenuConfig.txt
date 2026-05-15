@@ -1,24 +1,25 @@
-﻿@Excel 관련
-#좌표 입력\FileExcelSolid\ExcelInputUI\#217346
-#좌표 수집\TableSolid\ExcelCollectUI\#217346
-#17사 입력\BoltSolid\Excel17InputUI\#217346
-@txt 관련
-#좌표 입력\FileLinesSolid\TxtInputUI\#2B579A
-#좌표 수집\TableSolid\TxtCollectUI\#2B579A
-#17사 입력\BoltSolid\Txt17InputUI\#2B579A
-@좌표 관련
+﻿@데이터 입출력
+#좌표 입력 (Excel)\FileExcelSolid\ExcelInputUI\#217346
+#좌표 입력 (Txt)\FileLinesSolid\TxtInputUI\#2B579A
+#좌표 수집 (Excel)\TableSolid\ExcelCollectUI\#217346
+#좌표 수집 (Txt)\TableSolid\TxtCollectUI\#2B579A
+#17사 입력 (Excel)\BoltSolid\Excel17InputUI\#217346
+#17사 입력 (Txt)\BoltSolid\Txt17InputUI\#2B579A
+#좌표 이미지 입력\ImageSolid\ImageInputUI\#E67E22
+@좌표 및 투영
 #DWG 좌표변환\LocationCrosshairsSolid\DwgCoordUI\#D83B01
 #객체 좌표변환\DrawPolygonSolid\ObjCoordUI\#D83B01
-@물량 확인
-#코스별 매수 확인\RouteSolid\CourseCountUI\#009688
-#블럭 필터\FilterSolid\BlockFilterUI\#009688
-@객체선택
+#PRJ 파일 생성\CompassSolid\PrjGeneratorUI\#3498DB
+#EO 번호 일괄변경\MapMarkerSolid\EoIdChangeUI\#E67E22
+@도면 검수 및 편집
 #특정문자 검색\ArrowPointerSolid\SelectCharUI\#8764B8
 #중복텍스트 검사\CopySolid\DupTextUI\#8764B8
-@파일생성 & 포멧변경
+#블럭 필터\FilterSolid\BlockFilterUI\#009688
+@포맷 변환 (SHP/TFW)
 #폴리선 -> SHP\MapSolid\AreaToShpUI\#27AE60
 #주점 -> SHP\LocationDotSolid\PointToShpUI\#27AE60
 #외부표정요소 -> TFW\FileExportSolid\EoToTfwUI\#27AE60
 #외부표정요소 -> 영역 SHP\DrawPolygonSolid\EoToAreaShpUI\#27AE60
-#외부표정요소 -> 범위SHP\DrawPolygonSolid\EoToExtentShpUI\#27AE60
-#PRJ 생성 -> File\CompassSolid\PrjGeneratorUI\#3498DB
+#외부표정요소 -> 범위 SHP\DrawPolygonSolid\EoToExtentShpUI\#27AE60
+@물량 및 통계
+#코스별 매수 확인\RouteSolid\CourseCountUI\#009688

@@ -16,8 +16,7 @@ namespace Kys_cad_plugin.Commands
             // 마스터 스위치가 꺼져 있는 경우
             if (!CommandSettings.IsPluginEnabled)
             {
-                // ★ 핵심: C# 기능을 종료하고, 기존 LSP의 'c:sf' 함수를 강제로 실행시킵니다.
-                // (if c:sf ...) 구문을 통해 해당 리습이 로드되어 있는지 확인 후 실행하여 에러를 방지합니다.
+                // C# 기능을 종료하고, 기존 LSP의 'c:qa' 함수를 강제로 실행시킵니다.
                 doc.SendStringToExecute("(if c:qa (c:qa)) ", true, false, false);
                 return;
             }
@@ -36,11 +35,11 @@ namespace Kys_cad_plugin.Commands
                 {
                     LayerTableRecord ltr = (LayerTableRecord)tr.GetObject(layId, OpenMode.ForWrite);
 
-                    // 동결 및 끄기 상태 모두 해제
-                    if (ltr.IsFrozen || ltr.IsOff)
+                    // ★ 수정된 부분: '끄기(IsOff)' 조건은 무시하고 오직 '동결(IsFrozen)' 상태만 확인 후 해제합니다.
+                    if (ltr.IsFrozen)
                     {
-                        ltr.IsFrozen = false;
-                        ltr.IsOff = false;
+                        ltr.IsFrozen = false; // 동결 해제
+                        // ltr.IsOff = false; // <- 이 부분을 제거하여 켜기/끄기 상태는 건드리지 않음
                         count++;
                     }
                 }
@@ -50,7 +49,8 @@ namespace Kys_cad_plugin.Commands
                 // 화면 갱신: 동결 해제 후 객체를 다시 그리기 위해 필수
                 ed.Regen();
 
-                ed.WriteMessage($"\n[KYSQL] {count}개 레이어의 동결 및 숨김을 해제했습니다.");
+                // 메시지도 동결 해제에 맞게 수정
+                ed.WriteMessage($"\n[KYSQL] {count}개 레이어의 동결을 해제했습니다.");
             }
         }
     }
