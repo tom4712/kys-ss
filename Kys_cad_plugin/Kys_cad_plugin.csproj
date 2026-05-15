@@ -1,12 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
 	<PropertyGroup>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<UseWPF>true</UseWPF>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-<<<<<<< HEAD
 		<Version>4.6.4</Version>
 		<PackageId>Kysql_Plugin</PackageId>
 		<Authors>KIM YONG SU</Authors>
@@ -14,42 +12,39 @@
 		<Product>Kysql_Plugin</Product>
 		<Description>오토캐드 플러그인</Description>
 		<Copyright>Copyright © 2026 tom4712@kakao.com. All rights reserved.</Copyright>
-=======
-		<Version>4.6.1</Version>
->>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="Obfuscar.xml" />
-	  <None Remove="Resources\MenuConfig.txt" />
+		<None Remove="Obfuscar.xml" />
+		<None Remove="Resources\MenuConfig.txt" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Include="Obfuscar.xml">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
+		<Content Include="Obfuscar.xml">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <EmbeddedResource Include="Resources\MenuConfig.txt" />
+		<EmbeddedResource Include="Resources\MenuConfig.txt" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="GeoAPI" Version="1.7.5" />
-	  <PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
-	  <PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022">
-	  	<EmbedInteropTypes>true</EmbedInteropTypes>
-	  </PackageReference>
-	  <PackageReference Include="NetTopologySuite" Version="2.6.0" />
-	  <PackageReference Include="NetTopologySuite.IO.ShapeFile" Version="2.1.0" />
-	  <PackageReference Include="Obfuscar" Version="2.2.50">
-	    <PrivateAssets>all</PrivateAssets>
-	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
-	  <PackageReference Include="ProjNET4GeoAPI" Version="1.4.1" />
-	  <PackageReference Include="WPF-UI" Version="4.2.1">
-	    <GeneratePathProperty>True</GeneratePathProperty>
-	  </PackageReference>
+		<PackageReference Include="GeoAPI" Version="1.7.5" />
+		<PackageReference Include="MahApps.Metro.IconPacks" Version="6.2.1" />
+		<PackageReference Include="Microsoft.Office.Interop.Excel" Version="16.0.18925.20022">
+			<EmbedInteropTypes>true</EmbedInteropTypes>
+		</PackageReference>
+		<PackageReference Include="NetTopologySuite" Version="2.6.0" />
+		<PackageReference Include="NetTopologySuite.IO.ShapeFile" Version="2.1.0" />
+		<PackageReference Include="Obfuscar" Version="2.2.50">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="ProjNET4GeoAPI" Version="1.4.1" />
+		<PackageReference Include="WPF-UI" Version="4.2.1">
+			<GeneratePathProperty>True</GeneratePathProperty>
+		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -75,10 +70,7 @@
 		<Copy SourceFiles="C:\Program Files\Autodesk\AutoCAD 2026\Acdbmgd.dll;C:\Program Files\Autodesk\AutoCAD 2026\AcMgd.dll;C:\Program Files\Autodesk\AutoCAD 2026\AcCoreMgd.dll"
 			  DestinationFolder="$(TargetDir)"
 			  SkipUnchangedFiles="true" />
-
 		<Exec Command="cd &quot;$(TargetDir)&quot; &amp;&amp; &quot;$(PkgObfuscar)\tools\Obfuscar.Console.exe&quot; &quot;$(ProjectDir)Obfuscar.xml&quot;" />
-
 		<Delete Files="$(TargetDir)Acdbmgd.dll;$(TargetDir)AcMgd.dll;$(TargetDir)AcCoreMgd.dll" />
 	</Target>
-
 </Project>
