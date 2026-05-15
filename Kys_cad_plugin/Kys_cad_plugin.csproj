@@ -6,6 +6,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+<<<<<<< HEAD
 		<Version>4.6.4</Version>
 		<PackageId>Kysql_Plugin</PackageId>
 		<Authors>KIM YONG SU</Authors>
@@ -13,6 +14,9 @@
 		<Product>Kysql_Plugin</Product>
 		<Description>오토캐드 플러그인</Description>
 		<Copyright>Copyright © 2026 tom4712@kakao.com. All rights reserved.</Copyright>
+=======
+		<Version>4.6.1</Version>
+>>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
 	</PropertyGroup>
 
 	<ItemGroup>

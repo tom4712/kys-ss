@@ -1,5 +1,22 @@
+<<<<<<< HEAD
 ﻿using Kys_cad_plugin.Core; // ★ 중앙 데이터 매니저 참조 추가
 using Microsoft.Win32;
+=======
+﻿using Microsoft.Win32;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using Wpf.Ui.Controls;
+using Kys_cad_plugin.Core; // ★ 중앙 데이터 매니저 참조 추가
+
+>>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
 // GIS 라이브러리
 using NetTopologySuite.Features;
 using NetTopologySuite.Geometries;
@@ -110,8 +127,12 @@ namespace Kys_cad_plugin.Views
                 int totalRows = result.Rows.Count;
 
                 // 4. 비동기 영역 계산 및 병합(Union) 처리
+<<<<<<< HEAD
                 await Task.Run(() =>
                 {
+=======
+                await Task.Run(() => {
+>>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
                     int idx = 0;
                     foreach (var row in result.Rows)
                     {
@@ -142,8 +163,12 @@ namespace Kys_cad_plugin.Views
                             var ring = _factory.CreateLinearRing(new[] { tl, tr, br, bl, tl });
                             allPolygons.Add(_factory.CreatePolygon(ring));
 
+<<<<<<< HEAD
                             Dispatcher.Invoke(() =>
                             {
+=======
+                            Dispatcher.Invoke(() => {
+>>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
                                 _eoList.Add(eo);
                                 idx++;
                                 if (idx % 20 == 0 || idx == totalRows)

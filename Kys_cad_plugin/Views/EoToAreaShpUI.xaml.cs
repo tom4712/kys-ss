@@ -1,6 +1,21 @@
+<<<<<<< HEAD
 ﻿using Kys_cad_plugin.Core; // ★ 중앙 데이터 매니저 참조
 using Microsoft.Win32;
 using NetTopologySuite.Features;
+=======
+﻿using Microsoft.Win32;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using Wpf.Ui.Controls;
+using Kys_cad_plugin.Core; // ★ 중앙 데이터 매니저 참조
+
+>>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
 // GIS 라이브러리
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
@@ -103,8 +118,12 @@ namespace Kys_cad_plugin.Views
                 int totalRows = result.Rows.Count;
 
                 // 4. 영역 계산 비동기 처리
+<<<<<<< HEAD
                 await Task.Run(() =>
                 {
+=======
+                await Task.Run(() => {
+>>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
                     int idx = 0;
                     foreach (var row in result.Rows)
                     {
@@ -132,8 +151,12 @@ namespace Kys_cad_plugin.Views
                             Coordinate br = Rotate(eo.X, eo.Y, hW, -hH, kRad);
                             Coordinate bl = Rotate(eo.X, eo.Y, -hW, -hH, kRad);
 
+<<<<<<< HEAD
                             Dispatcher.Invoke(() =>
                             {
+=======
+                            Dispatcher.Invoke(() => {
+>>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
                                 _eoList.Add(eo);
                                 _footprintList.Add(new FootprintRecord
                                 {
