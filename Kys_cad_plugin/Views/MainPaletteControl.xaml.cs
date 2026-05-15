@@ -1,10 +1,7 @@
 ﻿using Kys_cad_plugin.Core;
 using MahApps.Metro.IconPacks; // 6.2.1.0 버전용
 using System.IO;
-<<<<<<< HEAD
-=======
-using System.Linq;
->>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
+
 using System.Net.Http;
 using System.Reflection;
 using System.Windows;

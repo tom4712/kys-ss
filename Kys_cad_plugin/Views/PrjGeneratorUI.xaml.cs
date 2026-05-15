@@ -1,19 +1,9 @@
-<<<<<<< HEAD
-﻿using Microsoft.Win32;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Text;
-using System.Windows;
-=======
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Windows;
+
 using Microsoft.Win32;
->>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Text;
+using System.Windows;
 using Wpf.Ui.Controls;
 
 namespace Kys_cad_plugin.Views

@@ -2,22 +2,12 @@
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Geometry;
-<<<<<<< HEAD
+
 using Kys_cad_plugin.Core; // ★ 중앙 데이터 매니저 참조
 using System.Collections.ObjectModel;
-=======
-using Microsoft.Win32;
-using System;
-using System.Collections.Generic; // List 사용을 위해 추가
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq; // Max 등 LINQ 사용을 위해 추가
-using System.Text;
->>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
 using System.Windows;
 using Wpf.Ui.Controls;
 using CadApp = Autodesk.AutoCAD.ApplicationServices.Application;
-using Kys_cad_plugin.Core; // ★ 중앙 데이터 매니저 참조
 
 namespace Kys_cad_plugin.Views
 {

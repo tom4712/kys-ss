@@ -1,15 +1,4 @@
-<<<<<<< HEAD
-﻿// 오토캐드 API 참조
-=======
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Windows;
-using Wpf.Ui.Controls;
-using Kys_cad_plugin.Core; // 중앙 매니저 참조
-
 // 오토캐드 API 참조
->>>>>>> 7e9172bbb8a61170a8c0f9989deb1cdf1e142fdd
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;

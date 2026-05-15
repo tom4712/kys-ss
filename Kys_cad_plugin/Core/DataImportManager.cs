@@ -1,10 +1,8 @@
-﻿using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using Kys_cad_plugin.Views;
 using Microsoft.Win32;
-using Kys_cad_plugin.Views;
+using System.IO;
+using System.Text;
+using System.Windows;
 
 namespace Kys_cad_plugin.Core
 {

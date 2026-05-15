@@ -1,20 +1,38 @@
-﻿<?xml version='1.0'?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Obfuscator>
+	<!-- 1. 입출력 경로 설정 -->
 	<Var name="InPath" value="." />
 	<Var name="OutPath" value=".\Obfuscated" />
 
-	<Var name="IgnoreMissingAssemblies" value="true" />
-	<Var name="IgnoreUninstallable" value="true" />
-
-	<Var name="AssemblySearchPath" value="C:\Program Files\Autodesk\AutoCAD 2026" />
-	<Var name="AssemblySearchPath" value="C:\Program Files\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.0" />
-
+	<!-- 2. 난독화 핵심 옵션 설정 -->
+	<!-- 캐드가 인식해야 하는 Public 명령어(CommandMethod)는 난독화 제외 -->
 	<Var name="KeepPublicApi" value="true" />
+
+	<!-- 내부(internal/private) 로직은 이름 무작위 변경 -->
 	<Var name="HidePrivateApi" value="true" />
 	<Var name="RenameProperties" value="true" />
-	<Var name="EncryptStrings" value="true" />
+	<Var name="RenameEvents" value="true" />
+	<Var name="RenameFields" value="true" />
 
-	<SkipAttributes type="Autodesk.AutoCAD.Runtime.CommandMethodAttribute" />
+	<!-- 문자열 암호화 (API 키, 라이선스 키 등 방어) -->
+	<Var name="HideStrings" value="true" />
 
-	<Module file="Kys_cad_plugin.dll" />
+	<!-- 제어 흐름 꼬기 (로직 분석 방해) -->
+	<Var name="OptimizeMethods" value="true" />
+
+	<!-- 디스어셈블러(ILDASM) 프로그램으로 열어보는 것을 방지 -->
+	<Var name="SuppressIldasm" value="true" />
+
+	<!-- 3. 참조 DLL 경로 탐색 (빌드 시 튕김 방지용) -->
+	<!-- AutoCAD 코어 dll 참조 -->
+	<AssemblySearchPath path="C:\Program Files\Autodesk\AutoCAD 2026\" />
+
+	<!-- .NET 8 및 WPF 시스템 참조 경로 -->
+	<AssemblySearchPath path="C:\Users\geo001\.nuget\packages\microsoft.windowsdesktop.app.ref\8.0.25\ref\net8.0\" />
+	<AssemblySearchPath path="C:\Users\geo001\.nuget\packages\microsoft.netcore.app.ref\8.0.25\ref\net8.0\" />
+	<!-- (예비용) 로컬 64비트 설치 경로 -->
+	<AssemblySearchPath path="C:\Program Files\dotnet\shared\Microsoft.WindowsDesktop.App\8.0.25\" />
+
+	<!-- 4. 난독화할 대상 타겟 파일 -->
+	<Module file="$(InPath)\Kys_cad_plugin.dll" />
 </Obfuscator>
