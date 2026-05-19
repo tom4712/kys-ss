@@ -3,10 +3,9 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-                 Title="EO 번호 일괄변경" 
-                 Width="700" Height="600"
+                 Title="EO 번호 일괄변경 및 도면 시각화" 
                  WindowStartupLocation="CenterScreen"
-                 ExtendsContentIntoTitleBar="True"
+                 WindowState="Maximized" ExtendsContentIntoTitleBar="True"
                  WindowBackdropType="Mica"
                  Background="{DynamicResource ApplicationBackgroundBrush}"
                  Foreground="{DynamicResource TextFillColorPrimaryBrush}"
@@ -19,9 +18,9 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <ui:TitleBar Grid.Row="0" Title="EO 번호 일괄변경" Padding="15,5"/>
+        <ui:TitleBar Grid.Row="0" Title="EO 식별자 변경 및 시각화" Padding="15,5"/>
 
-        <Grid Grid.Row="1" Margin="25,10,25,25">
+        <Grid Grid.Row="1" Margin="30,10,30,30">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="15"/>
@@ -30,75 +29,123 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <ui:Card Grid.Row="0" Padding="20">
+            <ui:Card Grid.Row="0" Padding="25,20">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="10"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Row="0" Orientation="Horizontal">
-                        <iconPacks:PackIconFontAwesome Kind="LocationDotSolid" Width="18" Height="18" Margin="0,0,8,0" Foreground="#E67E22" VerticalAlignment="Center"/>
-                        <TextBlock Text="원본 EO 데이터 불러오기 및 코스 분석" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <Grid Grid.Row="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
-                        <ui:TextBox Grid.Column="0" x:Name="TxtFilePath" IsReadOnly="True" PlaceholderText="EO 파일(txt)을 선택하세요..."/>
-                        <ui:Button Grid.Column="2" x:Name="BtnSelectFile" Content="파일 찾기" Click="BtnSelectFile_Click" Icon="FolderOpen24"/>
-
-                        <StackPanel Grid.Column="4" Orientation="Horizontal">
-                            <TextBlock Text="시간차(초):" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                            <ui:TextBox x:Name="TxtTimeGap" Text="15" Width="50" TextAlignment="Center"/>
-                            <ui:Button x:Name="BtnAnalyze" Content="분석" Click="BtnAnalyze_Click" Margin="5,0,0,0" Appearance="Secondary"/>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                            <iconPacks:PackIconFontAwesome Kind="LocationDotSolid" Width="20" Height="20" Margin="0,0,10,0" Foreground="#E67E22" VerticalAlignment="Center"/>
+                            <TextBlock Text="EO 데이터 분석 및 도면 시각화" FontWeight="Bold" FontSize="15" VerticalAlignment="Center"/>
                         </StackPanel>
-                    </Grid>
+                        <TextBlock Text="시간차(초) 기준으로 코스를 분할하고, 도면에 EO 위치(문자)와 시작점 강조 기호(원), 코스 영역(박스)을 그려냅니다." FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    </StackPanel>
                 </Grid>
             </ui:Card>
 
-            <ui:Card Grid.Row="2" Padding="15" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
+            <ui:Card Grid.Row="2" Padding="25" VerticalAlignment="Stretch" VerticalContentAlignment="Stretch">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="25"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="25"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="20"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Text="코스별 이름 및 시작번호 지정" FontWeight="Bold" FontSize="12" Margin="0,0,0,8" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
 
-                    <DataGrid Grid.Row="1" x:Name="CourseDataGrid" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" 
-                              Background="{DynamicResource ControlFillColorDefaultBrush}" BorderBrush="{DynamicResource ControlElevationBorderBrush}" BorderThickness="1">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="코스" Binding="{Binding CourseIndex}" IsReadOnly="True" Width="60"/>
-                            <DataGridTextColumn Header="매수" Binding="{Binding PhotoCount}" IsReadOnly="True" Width="60"/>
-                            <DataGridTextColumn Header="기존 시작 ID" Binding="{Binding OldStartId}" IsReadOnly="True" Width="100"/>
-                            <DataGridTextColumn Header="새 코스명 (예: C01_)" Binding="{Binding NewCourseName}" Width="150"/>
-                            <DataGridTextColumn Header="시작 번호 (예: 1)" Binding="{Binding NewStartNumber}" Width="100"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
+                    <StackPanel Grid.Row="0">
+                        <TextBlock Text="1. 원본 EO 데이터 파일 (TXT)" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="15"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ui:TextBox Grid.Column="0" x:Name="TxtFilePath" IsReadOnly="True" PlaceholderText="EO 파일(txt)을 선택하세요..." Height="36"/>
+                            <ui:Button Grid.Column="2" x:Name="BtnSelectFile" Content="파일 찾기" Click="BtnSelectFile_Click" Icon="Folder24" Height="36" Padding="15,0"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2">
+                        <TextBlock Text="2. 코스 분할 및 도면 작도 옵션" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <WrapPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                                <StackPanel Orientation="Horizontal" Margin="0,0,25,0">
+                                    <TextBlock Text="시간차(초) :" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <ui:TextBox x:Name="TxtTimeGap" Text="15" Width="70" Height="36" TextAlignment="Center" ClearButtonEnabled="False"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,0,25,0">
+                                    <TextBlock Text="클릭 줌 폭(m) :" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <ui:TextBox x:Name="TxtZoomSize" Text="100" Width="70" Height="36" TextAlignment="Center" ClearButtonEnabled="False"/>
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="도면 글자크기 :" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    <ui:TextBox x:Name="TxtTextSize" Text="10" Width="70" Height="36" TextAlignment="Center" ClearButtonEnabled="False"/>
+                                </StackPanel>
+                            </WrapPanel>
+
+                            <ui:Button Grid.Column="1" x:Name="BtnAnalyze" Content="코스 분석 및 작도" Click="BtnAnalyze_Click" Appearance="Secondary" Height="36" Padding="20,0"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <Grid Grid.Row="4">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="10"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <TextBlock Text="3. 코스별 새로운 이름 및 시작번호 지정" FontSize="13" FontWeight="SemiBold"/>
+                            <TextBlock Text=" (표를 클릭하면 캐드 화면이 해당 위치로 이동합니다)" FontSize="12" Foreground="#27AE60" VerticalAlignment="Bottom" Margin="5,0,0,0"/>
+                        </StackPanel>
+
+                        <DataGrid Grid.Row="2" x:Name="CourseDataGrid" AutoGenerateColumns="False" CanUserAddRows="False" HeadersVisibility="Column" 
+                                  Background="{DynamicResource ControlFillColorDefaultBrush}" BorderBrush="{DynamicResource ControlElevationBorderBrush}" BorderThickness="1"
+                                  SelectionMode="Single" SelectionChanged="CourseDataGrid_SelectionChanged" RowHeight="32">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="코스" Binding="{Binding CourseIndex}" IsReadOnly="True" Width="50"/>
+                                <DataGridTextColumn Header="매수" Binding="{Binding PhotoCount}" IsReadOnly="True" Width="50"/>
+                                <DataGridTextColumn Header="좌측 시작 ID" Binding="{Binding OldStartId}" IsReadOnly="True" Width="110"/>
+                                <DataGridTextColumn Header="새 코스 번호 (예: 127)" Binding="{Binding NewCourseName}" Width="*"/>
+                                <DataGridTextColumn Header="시작 사진 번호" Binding="{Binding NewStartNumber}" Width="110"/>
+
+                                <DataGridCheckBoxColumn Header="재촬영(A)" Binding="{Binding IsRetake, UpdateSourceTrigger=PropertyChanged}" Width="85">
+                                    <DataGridCheckBoxColumn.ElementStyle>
+                                        <Style TargetType="CheckBox">
+                                            <Setter Property="HorizontalAlignment" Value="Center"/>
+                                            <Setter Property="VerticalAlignment" Value="Center"/>
+                                        </Style>
+                                    </DataGridCheckBoxColumn.ElementStyle>
+                                </DataGridCheckBoxColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+
+                    <StackPanel Grid.Row="6" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="저장 포맷 선택 :" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                        <RadioButton x:Name="RbTxt" Content="TXT (공백 구분)" IsChecked="True" Margin="0,0,25,0"/>
+                        <RadioButton x:Name="RbExcel" Content="CSV (Excel 구분)"/>
+                    </StackPanel>
                 </Grid>
             </ui:Card>
 
-            <Grid Grid.Row="4">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
-                    <TextBlock Text="저장 포맷 :" FontWeight="Bold" Margin="0,0,10,0"/>
-                    <RadioButton x:Name="RbTxt" Content="TXT" IsChecked="True" Margin="0,0,15,0"/>
-                    <RadioButton x:Name="RbExcel" Content="CSV (Excel)"/>
+            <ui:Button Grid.Row="4" x:Name="BtnExport" Appearance="Primary" Height="65" HorizontalAlignment="Stretch" Click="BtnExport_Click" Background="#E67E22" BorderBrush="#E67E22">
+                <StackPanel Orientation="Horizontal">
+                    <iconPacks:PackIconFontAwesome Kind="FloppyDiskSolid" Width="20" Height="20" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="새로운 식별자(ID)로 EO 데이터 저장" FontWeight="Bold" FontSize="17" VerticalAlignment="Center"/>
                 </StackPanel>
-
-                <ui:Button x:Name="BtnExport" Appearance="Primary" Height="45" Width="200" HorizontalAlignment="Right" Click="BtnExport_Click" Background="#E67E22" BorderBrush="#E67E22">
-                    <StackPanel Orientation="Horizontal">
-                        <iconPacks:PackIconFontAwesome Kind="FloppyDiskSolid" Width="16" Height="16" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="새로운 EO 저장" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </ui:Button>
-            </Grid>
+            </ui:Button>
         </Grid>
     </Grid>
 </ui:FluentWindow>
