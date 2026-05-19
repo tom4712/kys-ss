@@ -4,7 +4,7 @@
 	<Var name="InPath" value="." />
 	<Var name="OutPath" value=".\Obfuscated" />
 
-0
+
 	<Var name="KeepPublicApi" value="true" />
 
 	<!-- 내부(internal/private) 로직은 이름 무작위 변경 -->
