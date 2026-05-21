@@ -3,8 +3,8 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
                  xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
-                 Title="SHP 도면 가져오기" 
-                 Width="650" Height="550"
+                 Title="SHP 도면 가져오기 (정밀 투영 지원)" 
+                 Width="680" Height="620"
                  WindowStartupLocation="CenterScreen"
                  ExtendsContentIntoTitleBar="True"
                  WindowBackdropType="Mica"
@@ -19,7 +19,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <ui:TitleBar Grid.Row="0" Title="SHP 파일 불러오기" Padding="15,5"/>
+        <ui:TitleBar Grid.Row="0" Title="SHP 파일 정밀 불러오기" Padding="15,5"/>
 
         <Grid Grid.Row="1" Margin="25,10,25,25">
             <Grid.RowDefinitions>
@@ -36,14 +36,16 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="15"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="15"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0">
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
                             <iconPacks:PackIconFontAwesome Kind="MapSolid" Width="18" Height="18" Margin="0,0,8,0" Foreground="#27AE60" VerticalAlignment="Center"/>
-                            <TextBlock Text="Shapefile(.shp) 캐드 도면화" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                            <TextBlock Text="Shapefile(.shp) 캐드 도면화 및 좌표계 투영" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
                         </StackPanel>
-                        <TextBlock Text="SHP 파일의 공간 데이터(점, 선, 면)를 캐드 객체(Point, Polyline)로 자동 변환하여 도면에 그립니다." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                        <TextBlock Text="SHP 파일의 원본 좌표계를 현재 작업 중인 DWG 도면의 좌표계로 실시간 변환하여 100% 정확한 위치에 작도합니다." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                     </StackPanel>
 
                     <Grid Grid.Row="2">
@@ -52,8 +54,26 @@
                             <ColumnDefinition Width="10"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <ui:TextBox Grid.Column="0" x:Name="TxtFilePath" IsReadOnly="True" PlaceholderText="불러올 SHP 파일을 선택하세요..." Height="36"/>
+                        <ui:TextBox Grid.Column="0" x:Name="TxtFilePath" IsReadOnly="True" PlaceholderText="불러올 SHP 파일을 선택하세요... (.prj 자동 감지)" Height="36"/>
                         <ui:Button Grid.Column="2" x:Name="BtnSelectFile" Content="파일 찾기" Click="BtnSelectFile_Click" Icon="FolderOpen24" Height="36"/>
+                    </Grid>
+
+                    <Grid Grid.Row="4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0" Text="현재 도면(DWG) 좌표계:" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                        <ComboBox Grid.Column="2" x:Name="CmbDwgCoord" Height="34" VerticalContentAlignment="Center" SelectedIndex="2"/>
+
+                        <TextBlock Grid.Column="4" Text="원본 SHP 좌표계:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#D83B01"/>
+                        <ComboBox Grid.Column="6" x:Name="CmbShpCoord" Height="34" VerticalContentAlignment="Center" SelectedIndex="2"/>
                     </Grid>
                 </Grid>
             </ui:Card>
@@ -77,7 +97,7 @@
                     </Grid>
 
                     <ListBox Grid.Row="2" x:Name="LogListBox" Background="{DynamicResource ControlFillColorDefaultBrush}" BorderBrush="{DynamicResource ControlElevationBorderBrush}" BorderThickness="1" ScrollViewer.VerticalScrollBarVisibility="Auto" Padding="5">
-                        <TextBlock Text="▶ SHP 파일을 선택한 후 아래 [도면 그리기] 버튼을 눌러주세요." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="2"/>
+                        <TextBlock Text="▶ 파일을 선택하면 PRJ 유무를 감지하여 원본 좌표계가 자동 세팅됩니다." FontSize="11" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Margin="2"/>
                     </ListBox>
                 </Grid>
             </ui:Card>
@@ -85,7 +105,7 @@
             <ui:Button Grid.Row="4" x:Name="BtnImportShp" Appearance="Primary" Height="55" HorizontalAlignment="Stretch" Click="BtnImportShp_Click" Background="#27AE60" BorderBrush="#27AE60">
                 <StackPanel Orientation="Horizontal">
                     <iconPacks:PackIconFontAwesome Kind="FileImportSolid" Width="18" Height="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                    <TextBlock Text="도면에 SHP 데이터 그리기" FontWeight="Bold" FontSize="15" VerticalAlignment="Center"/>
+                    <TextBlock Text="투영 변환 후 도면에 SHP 데이터 그리기" FontWeight="Bold" FontSize="15" VerticalAlignment="Center"/>
                 </StackPanel>
             </ui:Button>
         </Grid>

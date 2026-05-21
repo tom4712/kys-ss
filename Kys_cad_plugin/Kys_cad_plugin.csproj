@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-		<Version>4.8.0</Version>
+		<Version>4.9.0</Version>
 		<PackageId>Kysql_Plugin</PackageId>
 		<Authors>KIM YONG SU</Authors>
 		<Company>tom4712@kakao.com</Company>
